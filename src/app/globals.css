@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Tailwind 4'te tema değişkenleri burada tanımlanıyor.
+   Burada tanımladığın her renk otomatik olarak
+   bg-*, text-*, border-* sınıfları haline geliyor. */
+@theme {
+  --color-ink: #070b10; /* en koyu zemin */
+  --color-surface: #0e151d; /* kart zemini */
+  --color-line: #1e2a37; /* kenarlıklar */
+  --color-fg: #e6edf3; /* ana metin */
+  --color-muted: #8b98a5; /* soluk metin */
+  --color-tech: #22d3ee; /* teknoloji vurgusu (camgöbeği) */
+  --color-travel: #f59e0b; /* gezi vurgusu (amber) */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Hareket azaltma tercihi olan kullanıcılar için animasyonları kıs. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::selection {
+  background: var(--color-tech);
+  color: var(--color-ink);
 }
