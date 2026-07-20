@@ -65,7 +65,7 @@ export const projects: Project[] = [
     tagline: "Ekipler için görev yönetimi uygulaması",
     description:
       "Ekiplerin işlerini tek yerden yönetmesi için geliştirdiğim görev yönetimi uygulaması. Kullanıcılar ekip oluşturabiliyor, ekibe üye ekleyebiliyor ve üyelere görev atayarak ilerlemeyi takip edebiliyor.",
-    tags: ["Görev Yönetimi", "Ekip İşbirliği"],
+    tags: ["Python", "Flask", "SQLAlchemy", "SQLite"],
     featured: true,
   },
   {
@@ -172,6 +172,7 @@ export const skills = [
 ];
 
 export const certificates = [
+  "İHA-1 Drone Pilotu Sertifikası",
   "Python & TensorFlow — BTK Akademi",
   "Java Programlama — BTK Akademi",
   "Malware Analizi — Kapsül",
@@ -194,7 +195,8 @@ export type Place = {
   home?: boolean;
 };
 
-export const places: Place[] = [
+/** Giriş animasyonundaki uçuş rotası: ev + gezilen ülkelerin başkentleri. */
+export const introRoute: Place[] = [
   { city: "Konya", country: "Türkiye", lat: 37.87, lon: 32.48, home: true },
   { city: "İstanbul", country: "Türkiye", lat: 41.01, lon: 28.98 },
   { city: "Üsküp", country: "Makedonya", lat: 41.99, lon: 21.43 },
@@ -203,7 +205,7 @@ export const places: Place[] = [
   { city: "Budapeşte", country: "Macaristan", lat: 47.5, lon: 19.04 },
   { city: "Bratislava", country: "Slovakya", lat: 48.15, lon: 17.11 },
   { city: "Prag", country: "Çekya", lat: 50.08, lon: 14.44 },
-  { city: "Lublin", country: "Polonya", lat: 51.25, lon: 22.57 },
+  { city: "Varşova", country: "Polonya", lat: 52.23, lon: 21.01 },
   { city: "Berlin", country: "Almanya", lat: 52.52, lon: 13.4 },
   { city: "Amsterdam", country: "Hollanda", lat: 52.37, lon: 4.9 },
   { city: "Brüksel", country: "Belçika", lat: 50.85, lon: 4.35 },
@@ -211,4 +213,77 @@ export const places: Place[] = [
   { city: "Roma", country: "İtalya", lat: 41.9, lon: 12.5 },
 ];
 
-export const countryCount = new Set(places.map((p) => p.country)).size;
+/**
+ * Gezilen iller. İsimler turkey-map-react paketindeki resmî il
+ * adlarıyla birebir aynı olmalı (örn. "Afyon" değil "Afyonkarahisar"),
+ * yoksa harita o ili boyayamaz.
+ */
+export const visitedProvinces = [
+  "Afyonkarahisar",
+  "Aksaray",
+  "Ankara",
+  "Antalya",
+  "Ardahan",
+  "Aydın",
+  "Bartın",
+  "Bolu",
+  "Burdur",
+  "Bursa",
+  "Çanakkale",
+  "Çankırı",
+  "Çorum",
+  "Denizli",
+  "Diyarbakır",
+  "Erzurum",
+  "Eskişehir",
+  "Gaziantep",
+  "Giresun",
+  "Hatay",
+  "Isparta",
+  "İstanbul",
+  "İzmir",
+  "Kahramanmaraş",
+  "Karabük",
+  "Karaman",
+  "Kars",
+  "Kastamonu",
+  "Kırıkkale",
+  "Kırşehir",
+  "Kocaeli",
+  "Konya",
+  "Muğla",
+  "Nevşehir",
+  "Niğde",
+  "Ordu",
+  "Rize",
+  "Sakarya",
+  "Samsun",
+  "Şanlıurfa",
+  "Trabzon",
+];
+
+/** Gezilen Avrupa ülkeleri. code = ISO 3166-1 alpha-2, bayrak için kullanılıyor. */
+export type EuroCountry = { country: string; capital: string; code: string };
+
+export const europeCountries: EuroCountry[] = [
+  { country: "Makedonya", capital: "Üsküp", code: "mk" },
+  { country: "Sırbistan", capital: "Belgrad", code: "rs" },
+  { country: "Kosova", capital: "Priştine", code: "xk" },
+  { country: "Macaristan", capital: "Budapeşte", code: "hu" },
+  { country: "Slovakya", capital: "Bratislava", code: "sk" },
+  { country: "Çekya", capital: "Prag", code: "cz" },
+  { country: "Polonya", capital: "Varşova", code: "pl" },
+  { country: "Almanya", capital: "Berlin", code: "de" },
+  { country: "Hollanda", capital: "Amsterdam", code: "nl" },
+  { country: "Belçika", capital: "Brüksel", code: "be" },
+  { country: "Fransa", capital: "Paris", code: "fr" },
+  { country: "İtalya", capital: "Roma", code: "it" },
+];
+
+export const travelStats = {
+  provinces: visitedProvinces.length, // 41
+  europeCountries: europeCountries.length, // 12
+  europeCities: 23,
+  /** Avrupa ülkeleri + Türkiye */
+  countries: europeCountries.length + 1, // 13
+};

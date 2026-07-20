@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { profile, education, experience, languages, certificates } from "@/data/content";
 import Section from "./Section";
 import Reveal from "./Reveal";
@@ -5,15 +6,29 @@ import Reveal from "./Reveal";
 export default function About() {
   return (
     <Section id="hakkimda" index="01" title="Hakkımda">
-      <Reveal>
-        <p className="max-w-3xl leading-relaxed text-muted">{profile.summary}</p>
-      </Reveal>
+      <div className="grid gap-8 sm:grid-cols-[220px_1fr] sm:gap-10">
+        <Reveal>
+          <Image
+            src="/profil.jpg"
+            alt={profile.name}
+            width={440}
+            height={550}
+            className="w-full rounded-2xl border border-line object-cover"
+          />
+        </Reveal>
 
-      <Reveal delay={0.08}>
-        <p className="mt-4 max-w-3xl leading-relaxed text-muted">
-          {profile.travelBlurb}
-        </p>
-      </Reveal>
+        <div>
+          <Reveal>
+            <p className="leading-relaxed text-muted">{profile.summary}</p>
+          </Reveal>
+
+          <Reveal delay={0.08}>
+            <p className="mt-4 leading-relaxed text-muted">
+              {profile.travelBlurb}
+            </p>
+          </Reveal>
+        </div>
+      </div>
 
       {/* Eğitim */}
       <Reveal delay={0.14}>

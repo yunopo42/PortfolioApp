@@ -1,18 +1,26 @@
 "use client";
 
+import { cloneElement } from "react";
 import { motion } from "framer-motion";
-import { places, countryCount, profile, links } from "@/data/content";
-import { project, arcPath, graticule, MAP_W, MAP_H } from "@/lib/projection";
+import TurkeyMap from "turkey-map-react";
+import "flag-icons/css/flag-icons.min.css";
+import {
+  visitedProvinces,
+  europeCountries,
+  travelStats,
+  profile,
+  links,
+} from "@/data/content";
 
-const points = places.map((p) => ({ ...p, ...project(p) }));
-const segments = points.slice(0, -1).map((a, i) => ({
-  d: arcPath(a, points[i + 1]),
-  key: `${a.city}-${points[i + 1].city}`,
-}));
-const grid = graticule();
+// Set kullanıyoruz çünkü 81 il için 81 kez dizi taramak yerine
+// tek adımda "bu il gezildi mi?" sorusunu cevaplıyor.
+const visited = new Set(visitedProvinces);
 
-// Ülkeleri tekrarsız listele (Türkiye iki şehirde geçiyor).
-const countries = Array.from(new Set(places.map((p) => p.country)));
+const STATS = [
+  { value: travelStats.provinces, label: "il (Türkiye)" },
+  { value: travelStats.europeCountries, label: "Avrupa ülkesi" },
+  { value: travelStats.europeCities, label: "Avrupa şehri" },
+];
 
 export default function TravelMap() {
   return (
@@ -33,98 +41,97 @@ export default function TravelMap() {
         </p>
       </motion.div>
 
-      {/* Harita */}
-      <motion.div
-        className="mt-10 overflow-hidden rounded-2xl border border-line bg-surface p-2"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true, amount: 0.25 }}
-        transition={{ duration: 0.6 }}
-      >
-        <svg
-          viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-          className="h-auto w-full"
-          role="img"
-          aria-label={`Gezilen ${countryCount} ülkeyi gösteren rota haritası`}
-        >
-          <g stroke="var(--color-line)" strokeWidth={1} opacity={0.9}>
-            {grid.vertical.map((x) => (
-              <line key={`v${x}`} x1={x} y1={0} x2={x} y2={MAP_H} />
-            ))}
-            {grid.horizontal.map((y) => (
-              <line key={`h${y}`} x1={0} y1={y} x2={MAP_W} y2={y} />
-            ))}
-          </g>
-
-          <g fill="none" stroke="var(--color-travel)" strokeWidth={1.4} strokeLinecap="round">
-            {segments.map((seg, i) => (
-              <motion.path
-                key={seg.key}
-                d={seg.d}
-                initial={{ pathLength: 0, opacity: 0 }}
-                whileInView={{ pathLength: 1, opacity: 0.65 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{ duration: 0.6, delay: 0.3 + i * 0.09, ease: "easeInOut" }}
-              />
-            ))}
-          </g>
-
-          {points.map((p, i) => (
-            <motion.g
-              key={p.city}
-              initial={{ opacity: 0, scale: 0 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, amount: 0.25 }}
-              transition={{ duration: 0.4, delay: 0.15 + i * 0.07, ease: "backOut" }}
-              style={{ transformOrigin: `${p.x}px ${p.y}px` }}
-            >
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={p.home ? 9 : 6}
-                fill={p.home ? "var(--color-travel)" : "var(--color-tech)"}
-                opacity={0.18}
-              />
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r={p.home ? 3.6 : 2.4}
-                fill={p.home ? "var(--color-travel)" : "var(--color-tech)"}
-              />
-              <text
-                x={p.x + 9}
-                y={p.y + 4}
-                className="font-mono"
-                fontSize={11}
-                fill="var(--color-muted)"
-              >
-                {p.city}
-              </text>
-            </motion.g>
-          ))}
-        </svg>
-      </motion.div>
-
-      {/* Ülke listesi */}
-      <motion.ul
-        className="mt-8 flex flex-wrap gap-2"
+      {/* Sayılar */}
+      <motion.dl
+        className="mt-8 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border border-line bg-line"
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5 }}
       >
-        {countries.map((c) => (
-          <li
-            key={c}
-            className="rounded-full border border-line px-3 py-1.5 text-sm text-muted"
-          >
-            {c}
-          </li>
+        {STATS.map((s) => (
+          <div key={s.label} className="bg-surface px-5 py-6 text-center">
+            <dt className="text-2xl font-semibold text-travel sm:text-3xl">
+              {s.value}
+            </dt>
+            <dd className="mt-1 text-xs text-muted">{s.label}</dd>
+          </div>
         ))}
-      </motion.ul>
+      </motion.dl>
+
+      {/* Türkiye haritası */}
+      <motion.div
+        className="mt-10"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.7 }}
+      >
+        <h3 className="font-mono text-xs uppercase tracking-widest text-travel">
+          Türkiye — {travelStats.provinces} il
+        </h3>
+
+        <div className="tr-map mt-4 overflow-x-auto rounded-2xl border border-line bg-surface p-4">
+          <TurkeyMap
+            hoverable
+            showTooltip
+            // cityWrapper: paket her il için bir <g> elemanı üretiyor,
+            // biz de onu klonlayıp gezilenleri farklı renge boyuyoruz.
+            cityWrapper={(cityComponent, city) =>
+              cloneElement(
+                cityComponent as React.ReactElement<{ className?: string }>,
+                {
+                  key: city.id,
+                  className: visited.has(city.name)
+                    ? "tr-province-visited"
+                    : "tr-province-idle",
+                },
+              )
+            }
+          />
+        </div>
+      </motion.div>
+
+      {/* Avrupa bayrakları */}
+      <motion.div
+        className="mt-12"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 0.2 }}
+        transition={{ duration: 0.6 }}
+      >
+        <h3 className="font-mono text-xs uppercase tracking-widest text-tech">
+          Avrupa — {travelStats.europeCountries} ülke, hepsinin başkentinde
+        </h3>
+
+        <ul className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {europeCountries.map((c, i) => (
+            <motion.li
+              key={c.code}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.4, delay: i * 0.04 }}
+              className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 transition hover:-translate-y-0.5 hover:border-tech/50"
+            >
+              {/* flag-icons: fi + fi-<ülke kodu> sınıfları bayrağı çiziyor.
+                  Emoji yerine SVG olduğu için her işletim sisteminde aynı görünür. */}
+              <span
+                className={`fi fi-${c.code} shrink-0 rounded-sm`}
+                style={{ width: 32, height: 24 }}
+                aria-hidden
+              />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-fg">{c.country}</p>
+                <p className="truncate text-xs text-muted">{c.capital}</p>
+              </div>
+            </motion.li>
+          ))}
+        </ul>
+      </motion.div>
 
       <motion.p
-        className="mt-8 text-sm text-muted"
+        className="mt-10 text-sm text-muted"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}

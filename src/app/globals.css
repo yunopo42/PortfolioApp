@@ -1,16 +1,43 @@
 @import "tailwindcss";
 
-/* Tailwind 4'te tema değişkenleri burada tanımlanıyor.
-   Burada tanımladığın her renk otomatik olarak
-   bg-*, text-*, border-* sınıfları haline geliyor. */
-@theme {
-  --color-ink: #070b10; /* en koyu zemin */
-  --color-surface: #0e151d; /* kart zemini */
-  --color-line: #1e2a37; /* kenarlıklar */
-  --color-fg: #e6edf3; /* ana metin */
-  --color-muted: #8b98a5; /* soluk metin */
-  --color-tech: #22d3ee; /* teknoloji vurgusu (camgöbeği) */
-  --color-travel: #f59e0b; /* gezi vurgusu (amber) */
+/* Tailwind 4 varsayılan olarak dark: sınıfını işletim sistemi tercihine
+   bağlar. Biz düğmeyle kontrol edeceğimiz için .dark sınıfına bağlıyoruz. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Açık tema (varsayılan) */
+:root {
+  --ink: #fbfbfd; /* sayfa zemini */
+  --surface: #ffffff; /* kart zemini */
+  --line: #e4e7ec; /* kenarlıklar */
+  --fg: #0f1720; /* ana metin */
+  --muted: #5b6773; /* soluk metin */
+  --tech: #0e7490; /* teknoloji vurgusu */
+  --travel: #b45309; /* gezi vurgusu */
+  --glow: rgba(14, 116, 144, 0.08);
+}
+
+/* Karanlık tema */
+.dark {
+  --ink: #080c12;
+  --surface: #111922;
+  --line: #1f2b38;
+  --fg: #e6edf3;
+  --muted: #8b98a5;
+  --tech: #22d3ee;
+  --travel: #f59e0b;
+  --glow: rgba(34, 211, 238, 0.1);
+}
+
+/* @theme inline: değeri sabitlemek yerine değişkene bağlar,
+   böylece tema değişince renkler canlı olarak güncellenir. */
+@theme inline {
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-tech: var(--tech);
+  --color-travel: var(--travel);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -21,12 +48,42 @@ html {
 }
 
 body {
-  background: var(--color-ink);
-  color: var(--color-fg);
+  background: var(--ink);
+  color: var(--fg);
   font-family: var(--font-sans), system-ui, sans-serif;
+  /* Sayfanın üstünde çok hafif bir renk yumuşaması */
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    var(--glow),
+    transparent
+  );
+  background-repeat: no-repeat;
 }
 
-/* Hareket azaltma tercihi olan kullanıcılar için animasyonları kıs. */
+/* --- Türkiye haritası ---
+   turkey-map-react her ile satır içi "style: fill" veriyor.
+   Satır içi stil sınıfları ezdiği için kendi renklerimizi
+   !important ile geçirmek zorundayız. */
+.tr-map path {
+  stroke: var(--ink);
+  stroke-width: 0.8;
+  transition:
+    fill 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.tr-province-visited > path {
+  fill: var(--travel) !important;
+}
+
+.tr-province-idle > path {
+  fill: var(--line) !important;
+}
+
+.tr-map g:hover > path {
+  opacity: 0.65;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -42,6 +99,6 @@ body {
 }
 
 ::selection {
-  background: var(--color-tech);
-  color: var(--color-ink);
+  background: var(--tech);
+  color: var(--ink);
 }

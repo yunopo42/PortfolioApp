@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { places, profile, countryCount } from "@/data/content";
+import { introRoute, profile, travelStats } from "@/data/content";
 import { project, arcPath, graticule, MAP_W, MAP_H } from "@/lib/projection";
 
 /* Animasyonun zaman çizelgesi (saniye).
@@ -18,7 +18,7 @@ const T = {
   finish: 5.6,
 };
 
-const points = places.map((p) => ({ ...p, ...project(p) }));
+const points = introRoute.map((p) => ({ ...p, ...project(p) }));
 const segments = points.slice(0, -1).map((a, i) => ({
   d: arcPath(a, points[i + 1]),
   key: `${a.city}-${points[i + 1].city}`,
@@ -86,8 +86,11 @@ export default function IntroScreen({ onDone }: { onDone: () => void }) {
   if (reduceMotion) return null;
 
   return (
+    // "dark" sınıfı: sayfa açık temada olsa bile giriş ekranı koyu kalsın.
+    // Tema renkleri CSS değişkeni olduğu için bu blok içinde otomatik olarak
+    // karanlık değerlere düşüyorlar.
     <motion.div
-      className="fixed inset-0 z-50 overflow-hidden bg-ink"
+      className="dark fixed inset-0 z-50 overflow-hidden bg-ink"
       exit={{ opacity: 0 }}
       transition={{ duration: 0.7, ease: "easeInOut" }}
     >
@@ -203,7 +206,7 @@ export default function IntroScreen({ onDone }: { onDone: () => void }) {
           </div>
           <div className="text-travel">
             <Typed
-              text={`${countryCount} ülke · ${places.length} şehir · 1 sırt çantası`}
+              text={`${travelStats.countries} ülke · ${travelStats.provinces} il · 1 sırt çantası`}
               delay={2.85}
             />
           </div>

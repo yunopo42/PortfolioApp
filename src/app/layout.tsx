@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { profile } from "@/data/content";
+import ThemeProvider from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,11 +31,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // suppressHydrationWarning: next-themes <html>'e .dark sınıfını
+    // tarayıcıda ekliyor, bu da sunucu çıktısıyla küçük bir fark yaratıyor.
+    // Bu uyarıyı yalnızca burada susturmak next-themes'in önerdiği yöntem.
     <html
       lang="tr"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-ink text-fg">{children}</body>
+      <body className="min-h-full flex flex-col bg-ink text-fg">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -1,4 +1,5 @@
 import { profile } from "@/data/content";
+import ThemeToggle from "./ThemeToggle";
 
 const SECTIONS = [
   { href: "#hakkimda", label: "Hakkımda" },
@@ -17,15 +18,18 @@ export default function SiteNav() {
           <span className="text-tech">.</span>
         </a>
 
-        <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-muted">
-          {SECTIONS.map((s) => (
-            <li key={s.href}>
-              <a href={s.href} className="transition hover:text-fg">
-                {s.label}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="flex items-center gap-4">
+          <ul className="hidden flex-wrap items-center gap-x-5 gap-y-1 text-sm text-muted sm:flex">
+            {SECTIONS.map((s) => (
+              <li key={s.href}>
+                <a href={s.href} className="transition hover:text-fg">
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <ThemeToggle />
+        </div>
       </nav>
     </header>
   );
