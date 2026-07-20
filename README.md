@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kişisel Portföy — Yunus Emre Atmaz
 
-## Getting Started
+Bilgisayar mühendisliği + gezginlik kimliğini birleştiren tek sayfalık portföy sitesi.
+Terminal yazımı ve uçuş rotası animasyonlu bir girişle açılır; gezilen 41 ili
+gerçek il sınırlarıyla gösteren Türkiye haritası ve Avrupa bayrak kartları içerir.
 
-First, run the development server:
+## Teknolojiler
+
+| Katman | Araç |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | React 19, Tailwind CSS 4 |
+| Animasyon | Framer Motion |
+| Tema | next-themes (açık varsayılan + karanlık mod) |
+| Harita / Bayraklar | turkey-map-react, flag-icons |
+
+## Geliştirme
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # production build
+npm run lint     # ESLint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## İçerik güncelleme
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Sitedeki tüm metin ve veriler tek dosyada: [`src/data/content.ts`](src/data/content.ts).
+Yeni proje, il, ülke veya sertifika eklemek için genelde sadece bu dosyayı
+düzenlemek yeterli — bileşenler veriyi oradan okur.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Profil fotoğrafı: `public/profil.jpg` (şu an yer tutucu).
 
-## Learn More
+## Mimari notlar
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app/page.tsx` sunucu bileşeni; giriş animasyonu (`IntroGate`) siteyi
+  `children` olarak alır, böylece içerik client bundle'a taşınmaz.
+- Türkiye haritası `next/dynamic` ile ayrı pakete bölünür; sayfa ilk açılışta
+  onu indirmez.
+- Renkler CSS değişkeni (`globals.css`): `:root` açık tema, `.dark` karanlık.
+- Giriş animasyonu oturum başına bir kez oynar (`sessionStorage`),
+  Esc / Enter / "geç" ile atlanabilir ve `prefers-reduced-motion`'da devre dışıdır.

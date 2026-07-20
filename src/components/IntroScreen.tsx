@@ -99,6 +99,7 @@ export default function IntroScreen({ onDone }: { onDone: () => void }) {
         viewBox={`0 0 ${MAP_W} ${MAP_H}`}
         className="absolute inset-0 h-full w-full"
         preserveAspectRatio="xMidYMid meet"
+        aria-hidden
         initial={{ opacity: 0, scale: 1.08 }}
         // Harita önce soluk belirir, terminal kaybolunca parlar,
         // isim geldikten sonra tekrar söner. times[] dizisi 0'dan başlamalı.

@@ -1,6 +1,10 @@
 // Sitedeki tüm içerik burada. Siteyi güncellemek için genelde
 // sadece bu dosyayı düzenlemen yeterli.
 
+// Sitenin canlı adresi. Deploy sonrası gerçek domain ile güncelle —
+// sitemap, robots.txt ve sosyal medya kartları bu adresi kullanıyor.
+export const siteUrl = "https://yunusemreatmaz.vercel.app";
+
 export const profile = {
   name: "Yunus Emre Atmaz",
   title: "Bilgisayar Mühendisliği Öğrencisi",

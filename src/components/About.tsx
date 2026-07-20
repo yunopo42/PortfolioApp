@@ -13,6 +13,7 @@ export default function About() {
             alt={profile.name}
             width={440}
             height={550}
+            sizes="(min-width: 640px) 220px, 100vw"
             className="w-full rounded-2xl border border-line object-cover"
           />
         </Reveal>

@@ -2,8 +2,19 @@
 
 import { cloneElement } from "react";
 import { motion } from "framer-motion";
-import TurkeyMap from "turkey-map-react";
+import dynamic from "next/dynamic";
 import "flag-icons/css/flag-icons.min.css";
+
+// Harita 81 ilin SVG çizimini içeriyor (~yüzlerce KB). dynamic() ile
+// ayrı bir pakete bölünüyor: ana sayfa yüklenirken inmiyor, bu bölüme
+// gelindiğinde tarayıcı arka planda getiriyor. ssr: false — harita
+// yalnızca görsel/hover odaklı olduğu için sunucuda çizmenin değeri yok.
+const TurkeyMap = dynamic(() => import("turkey-map-react"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-64 w-full animate-pulse rounded-xl bg-line/50 sm:h-96" />
+  ),
+});
 import {
   visitedProvinces,
   europeCountries,
@@ -71,7 +82,17 @@ export default function TravelMap() {
           Türkiye — {travelStats.provinces} il
         </h3>
 
-        <div className="tr-map mt-4 overflow-x-auto rounded-2xl border border-line bg-surface p-4">
+        {/* Ekran okuyucular hover baloncuklarını göremez; il listesi
+            onlar için görünmez bir paragraf olarak veriliyor. */}
+        <p className="sr-only">
+          Gezdiğim iller: {visitedProvinces.join(", ")}.
+        </p>
+
+        <div
+          role="img"
+          aria-label={`Türkiye haritası — gezilen ${travelStats.provinces} il işaretli`}
+          className="tr-map mt-4 overflow-x-auto rounded-2xl border border-line bg-surface p-4"
+        >
           <TurkeyMap
             hoverable
             showTooltip

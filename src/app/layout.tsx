@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { profile } from "@/data/content";
-import ThemeProvider from "@/components/ThemeProvider";
+import { profile, siteUrl } from "@/data/content";
+import Providers from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // metadataBase: og:image gibi göreli adresleri mutlak URL'e çevirir.
+  metadataBase: new URL(siteUrl),
   title: `${profile.name} — ${profile.title}`,
   description: profile.summary,
   openGraph: {
@@ -40,7 +42,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-ink text-fg">
-        <ThemeProvider>{children}</ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,6 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import IntroScreen from "./IntroScreen";
 
@@ -9,12 +14,28 @@ import IntroScreen from "./IntroScreen";
  * children sunucuda render edilip buraya prop olarak geliyor —
  * yani sitenin geri kalanı gereksiz yere client bundle'a girmiyor.
  */
+const SEEN_KEY = "intro-seen";
+
+// useSyncExternalStore için: tarayıcı dışı (sunucu) render'da "izlenmedi"
+// varsay, tarayıcıda sessionStorage'a bak. Bu, harici bir kaynağı okumak
+// için React'in önerdiği yol — effect içinde setState çağırmaktan farklı
+// olarak fazladan render turu da üretmez.
+const subscribe = () => () => {};
+const getSeen = () => sessionStorage.getItem(SEEN_KEY) !== null;
+const getServerSeen = () => false;
+
 export default function IntroGate({ children }: { children: React.ReactNode }) {
-  const [done, setDone] = useState(false);
+  // Animasyon bu oturumda zaten izlendiyse tekrar oynatma.
+  const seen = useSyncExternalStore(subscribe, getSeen, getServerSeen);
+  const [finished, setFinished] = useState(false);
+  const done = seen || finished;
 
   // useCallback: fonksiyonun kimliği sabit kalsın ki
   // IntroScreen içindeki zamanlayıcılar her render'da sıfırlanmasın.
-  const finish = useCallback(() => setDone(true), []);
+  const finish = useCallback(() => {
+    sessionStorage.setItem(SEEN_KEY, "1");
+    setFinished(true);
+  }, []);
 
   // Animasyon sürerken arka planın kaymasını engelle.
   useEffect(() => {

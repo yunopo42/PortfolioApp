@@ -6,7 +6,7 @@ import Social from "./Social";
 const STATS = [
   { value: `${travelStats.provinces}`, label: "il gezildi" },
   { value: `${travelStats.countries}`, label: "ülke" },
-  { value: `${projects.length}`, label: "öne çıkan proje" },
+  { value: `${projects.length}`, label: "proje" },
   { value: "3.42", label: "GPA / 4.00" },
 ];
 
@@ -48,6 +48,7 @@ export default function Hero() {
               width={176}
               height={176}
               priority
+              sizes="(min-width: 640px) 176px, 128px"
               className="relative h-32 w-32 rounded-full border border-line object-cover sm:h-44 sm:w-44"
             />
           </div>
