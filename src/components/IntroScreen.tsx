@@ -94,16 +94,20 @@ export default function IntroScreen({ onDone }: { onDone: () => void }) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.7, ease: "easeInOut" }}
     >
-      {/* ---- Arka plandaki harita ---- */}
+      {/* ---- Arka plandaki harita ----
+          preserveAspectRatio="slice": harita en/boy oranı ekrana uymasa bile
+          tüm alanı doldurur (kenarlardan taşarak), böylece dar/uzun ekranlarda
+          boş bölge kalmaz. */}
       <motion.svg
         viewBox={`0 0 ${MAP_W} ${MAP_H}`}
         className="absolute inset-0 h-full w-full"
-        preserveAspectRatio="xMidYMid meet"
+        preserveAspectRatio="xMidYMid slice"
         aria-hidden
         initial={{ opacity: 0, scale: 1.08 }}
-        // Harita önce soluk belirir, terminal kaybolunca parlar,
-        // isim geldikten sonra tekrar söner. times[] dizisi 0'dan başlamalı.
-        animate={{ opacity: [0, 0, 0.4, 0.4, 1, 1, 0.15], scale: 1 }}
+        // Harita soluk belirir, terminal kaybolunca kısa süre parlar,
+        // sonra isim gelmeden SÖNER — böylece isim rahat okunur.
+        // times[] dizisi 0'dan başlayıp 1'de bitmeli.
+        animate={{ opacity: [0, 0, 0.35, 0.55, 0.75, 0.14, 0.12], scale: 1 }}
         transition={{
           opacity: {
             duration: T.finish,
@@ -112,8 +116,8 @@ export default function IntroScreen({ onDone }: { onDone: () => void }) {
               T.mapIn / T.finish,
               (T.mapIn + 0.7) / T.finish,
               T.terminalOut / T.finish,
-              (T.terminalOut + 0.5) / T.finish,
-              (T.nameIn + 0.5) / T.finish,
+              (T.terminalOut + 0.3) / T.finish,
+              T.nameIn / T.finish,
               1,
             ],
           },
@@ -177,52 +181,82 @@ export default function IntroScreen({ onDone }: { onDone: () => void }) {
         ))}
       </motion.svg>
 
-      {/* ---- Terminal ---- */}
+      {/* ---- Terminal penceresi ---- */}
       <motion.div
-        className="relative z-10 flex h-full items-center justify-center px-6"
+        className="relative z-10 flex h-full items-center justify-center p-5 sm:p-6"
         initial={{ opacity: 1 }}
         animate={{ opacity: 0 }}
         transition={{ duration: 0.5, delay: T.terminalOut }}
       >
-        <div className="w-full max-w-xl font-mono text-sm leading-7 sm:text-base">
-          <div>
-            <span className="text-tech">$</span>{" "}
-            <Typed text="whoami" delay={0.3} />
-          </div>
-          <div className="text-muted">
-            <Typed text={`${profile.name} — Bilgisayar Mühendisi`} delay={0.75} />
+        <motion.div
+          className="w-full max-w-[34rem] overflow-hidden rounded-xl border border-line/80 bg-black/55 shadow-2xl shadow-black/50 backdrop-blur-md"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          {/* Pencere başlık çubuğu */}
+          <div className="flex items-center gap-2 border-b border-line/60 bg-white/[0.03] px-4 py-2.5">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+            <span className="ml-2 font-mono text-xs text-muted">
+              gezgin@portfolio ~
+            </span>
           </div>
 
-          <div className="mt-3">
-            <span className="text-tech">$</span>{" "}
-            <Typed text="cat ilgi-alanlari.txt" delay={1.25} />
-          </div>
-          <div className="text-muted">
-            <Typed text="GenAI · Backend · Database · Mobil" delay={1.85} />
-          </div>
+          {/* Komutlar — çıktı satırları parlak renklerle okunur */}
+          <div className="px-5 py-5 font-mono text-sm leading-relaxed text-fg sm:text-base">
+            <div>
+              <span className="text-tech">$</span>{" "}
+              <Typed text="whoami" delay={0.3} />
+            </div>
+            <div className="text-white">
+              <Typed
+                text={`${profile.name} — Bilgisayar Mühendisi`}
+                delay={0.75}
+              />
+            </div>
 
-          <div className="mt-3">
-            <span className="text-tech">$</span>{" "}
-            <Typed text="./gezgin --özet" delay={2.35} />
+            <div className="mt-3">
+              <span className="text-tech">$</span>{" "}
+              <Typed text="cat ilgi-alanlari.txt" delay={1.25} />
+            </div>
+            <div className="text-tech">
+              <Typed text="GenAI · Backend · Database · Mobil" delay={1.85} />
+            </div>
+
+            <div className="mt-3">
+              <span className="text-tech">$</span>{" "}
+              <Typed text="./gezgin --özet" delay={2.35} />
+            </div>
+            <div className="text-travel">
+              <Typed
+                text={`${travelStats.countries} ülke · ${travelStats.provinces} il · 1 sırt çantası`}
+                delay={2.85}
+              />
+            </div>
           </div>
-          <div className="text-travel">
-            <Typed
-              text={`${travelStats.countries} ülke · ${travelStats.provinces} il · 1 sırt çantası`}
-              delay={2.85}
-            />
-          </div>
-        </div>
+        </motion.div>
       </motion.div>
 
-      {/* ---- İsim ---- */}
+      {/* ---- İsim ----
+          Arkadaki radyal koyu vignette, harita üzerinde ismin her zaman
+          okunmasını garanti eder. */}
       <motion.div
         className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: T.nameIn }}
       >
+        <div
+          className="absolute left-1/2 top-1/2 h-[420px] w-[820px] max-w-[140vw] -translate-x-1/2 -translate-y-1/2"
+          style={{
+            background:
+              "radial-gradient(ellipse at center, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 45%, transparent 75%)",
+          }}
+        />
         <motion.h1
-          className="text-4xl font-semibold tracking-tight sm:text-6xl"
+          className="relative text-5xl font-semibold tracking-tight text-white drop-shadow-[0_2px_20px_rgba(0,0,0,0.8)] sm:text-7xl"
           initial={{ y: 18, filter: "blur(10px)" }}
           animate={{ y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.9, delay: T.nameIn, ease: "easeOut" }}
@@ -230,7 +264,7 @@ export default function IntroScreen({ onDone }: { onDone: () => void }) {
           {profile.name}
         </motion.h1>
         <motion.p
-          className="mt-3 font-mono text-sm text-muted sm:text-base"
+          className="relative mt-4 font-mono text-sm text-tech drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] sm:text-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: T.nameIn + 0.45 }}

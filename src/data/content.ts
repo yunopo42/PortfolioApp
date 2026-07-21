@@ -203,10 +203,13 @@ export type Place = {
 export const introRoute: Place[] = [
   { city: "Konya", country: "Türkiye", lat: 37.87, lon: 32.48, home: true },
   { city: "İstanbul", country: "Türkiye", lat: 41.01, lon: 28.98 },
+  { city: "Sofya", country: "Bulgaristan", lat: 42.7, lon: 23.32 },
+  { city: "Bükreş", country: "Romanya", lat: 44.43, lon: 26.1 },
   { city: "Üsküp", country: "Makedonya", lat: 41.99, lon: 21.43 },
   { city: "Priştine", country: "Kosova", lat: 42.66, lon: 21.16 },
   { city: "Belgrad", country: "Sırbistan", lat: 44.79, lon: 20.45 },
   { city: "Budapeşte", country: "Macaristan", lat: 47.5, lon: 19.04 },
+  { city: "Viyana", country: "Avusturya", lat: 48.21, lon: 16.37 },
   { city: "Bratislava", country: "Slovakya", lat: 48.15, lon: 17.11 },
   { city: "Prag", country: "Çekya", lat: 50.08, lon: 14.44 },
   { city: "Varşova", country: "Polonya", lat: 52.23, lon: 21.01 },
@@ -215,6 +218,7 @@ export const introRoute: Place[] = [
   { city: "Brüksel", country: "Belçika", lat: 50.85, lon: 4.35 },
   { city: "Paris", country: "Fransa", lat: 48.86, lon: 2.35 },
   { city: "Roma", country: "İtalya", lat: 41.9, lon: 12.5 },
+  { city: "Vatikan", country: "Vatikan", lat: 41.9, lon: 12.45 },
 ];
 
 /**
@@ -282,12 +286,16 @@ export const europeCountries: EuroCountry[] = [
   { country: "Belçika", capital: "Brüksel", code: "be" },
   { country: "Fransa", capital: "Paris", code: "fr" },
   { country: "İtalya", capital: "Roma", code: "it" },
+  { country: "Avusturya", capital: "Viyana", code: "at" },
+  { country: "Romanya", capital: "Bükreş", code: "ro" },
+  { country: "Bulgaristan", capital: "Sofya", code: "bg" },
+  { country: "Vatikan", capital: "Vatikan", code: "va" },
 ];
 
 export const travelStats = {
   provinces: visitedProvinces.length, // 41
-  europeCountries: europeCountries.length, // 12
+  europeCountries: europeCountries.length, // 16
   europeCities: 23,
   /** Avrupa ülkeleri + Türkiye */
-  countries: europeCountries.length + 1, // 13
+  countries: europeCountries.length + 1, // 17
 };
