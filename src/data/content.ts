@@ -33,10 +33,10 @@ export const education = [
     detail: "GPA 3.42 / 4.00 · Tam Burslu",
   },
   {
-    school: "Lublin Teknoloji Üniversitesi",
-    degree: "Erasmus+ Değişim Programı, Bilgisayar Bilimleri",
+    school: "Lublin University of Technology",
+    degree: "Erasmus+ Exchange Program, Computer Science",
     period: "2025 — 2026",
-    detail: "GPA 3.85 / 4.00 · Yapay Zekâ, Makine Öğrenmesi, İleri Python",
+    detail: "GPA 3.85 / 4.00 · AI , Machine Learning, Advanced Python",
   },
 ];
 
