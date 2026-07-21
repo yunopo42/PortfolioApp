@@ -12,7 +12,7 @@ export const profile = {
   location: "Konya, Türkiye",
   email: "yunusemreatmaz@gmail.com",
   summary:
-    "KTO Karatay Üniversitesi'nde 3. sınıf bilgisayar mühendisliği öğrencisiyim (GPA 3.42, tam burslu) ve şu an Lublin Teknoloji Üniversitesi'nde Erasmus+ ile yapay zekâ ve makine öğrenmesi üzerine çalışıyorum. Yapay zekâ destekli sistemler, IoT otomasyonu ve full-stack geliştirme üzerine projeler üretiyorum; backend ve veritabanı tarafı en sevdiğim alan.",
+    "KTO Karatay Üniversitesi'nde 4. sınıf bilgisayar mühendisliği öğrencisiyim (GPA 3.42, tam burslu); Lublin Teknoloji Üniversitesi'nde Erasmus+ ile yapay zekâ ve makine öğrenmesi üzerine bir dönem geçirdim. Yapay zekâ destekli sistemler, IoT otomasyonu ve full-stack geliştirme üzerine projeler üretiyorum; backend ve veritabanı tarafı en sevdiğim alan.",
   travelBlurb:
     "Kod yazmadığım zamanlarda sırt çantamla yollardayım. 13 ülke gezdim ve gezdiğim her yeri kameraya alıp 2.000+ kişilik bir izleyici kitlesiyle paylaşıyorum.",
 };
@@ -41,6 +41,17 @@ export const education = [
 ];
 
 export const experience = [
+  {
+    role: "Yazılım Mühendisliği Stajyeri",
+    company: "Türk Standartları Enstitüsü (TSE)",
+    period: "2026 — Devam ediyor",
+    bullets: [
+      // TODO: Detayları netleştir — TSE'deki iki projeyi ve kullandığın
+      // teknolojileri kendi cümlelerinle yaz.
+      "Ekipler için görev yönetimi uygulaması FlowDesk'i geliştirdim (Python, Flask, SQLAlchemy, SQLite).",
+      "İkinci bir proje üzerinde çalışıyorum. (açıklama eklenecek)",
+    ],
+  },
   {
     role: "Yazılım Mühendisliği Stajyeri",
     company: "Atiker Yazılım A.Ş.",
