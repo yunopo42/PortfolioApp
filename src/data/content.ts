@@ -70,6 +70,7 @@ export const projects: Project[] = [
     description:
       "Ekiplerin işlerini tek yerden yönetmesi için geliştirdiğim görev yönetimi uygulaması. Kullanıcılar ekip oluşturabiliyor, ekibe üye ekleyebiliyor ve üyelere görev atayarak ilerlemeyi takip edebiliyor.",
     tags: ["Python", "Flask", "SQLAlchemy", "SQLite"],
+    href: "https://github.com/yunopo42/FlowDesk-TaskManagementSystemForTeams",
     featured: true,
   },
   {
@@ -87,7 +88,7 @@ export const projects: Project[] = [
       "ESP32",
       "Random Forest",
     ],
-    href: links.github,
+    href: "https://github.com/yunopo42/Otonom-Sera-365",
     featured: true,
   },
   {
@@ -96,8 +97,18 @@ export const projects: Project[] = [
     description:
       "Next.js 16 App Router ve TypeScript ile yazılmış full-stack Erasmus yönetim uygulaması. Backend mantığı Next.js API Routes üzerinde, veritabanı better-sqlite3 ile SQLite. React 19 bileşenleri, CSS Modules ve next-themes ile koyu/açık tema desteği içeriyor. Akıllı dashboard, vize kontrol listesi, bütçe takibi, onboarding akışı ve dijital seyahat pasaportu özellikleri var.",
     tags: ["Next.js 16", "TypeScript", "React 19", "SQLite", "API Routes"],
-    href: links.github,
+    href: "https://github.com/yunopo42/ErasmusApp",
     featured: true,
+  },
+  {
+    name: "Vardiya & Personel Takip",
+    tagline: "Clomosy ile geliştirilmiş mobil takip uygulaması",
+    // TODO: Açıklamayı kendi cümlelerinle netleştir — hangi özellikler var,
+    // staj/iş kapsamında mı yapıldı vb.
+    description:
+      "Clomosy düşük kodlu (low-code) platformu üzerinde geliştirilmiş, ekiplerin vardiya ve personel takibini kolaylaştıran mobil uygulama. Personel kayıtları ve vardiya planlaması tek yerden yönetiliyor.",
+    tags: ["Clomosy", "Low-Code", "Mobil"],
+    href: "https://github.com/yunopo42/Vardiya-Ve-Personel-Takip-Uygulamas-Clomosy",
   },
   {
     name: "Ultimate Finance Terminal",
@@ -105,7 +116,7 @@ export const projects: Project[] = [
     description:
       "Python ve PyQt5 ile geliştirilmiş masaüstü finansal takip uygulaması. requests ve BeautifulSoup ile canlı finansal veriyi web'den çekiyor, HTML yapılarını ayrıştırıp ham piyasa verisini sayısal formata çeviriyor ve Matplotlib ile görselleştiriyor.",
     tags: ["Python", "PyQt5", "BeautifulSoup", "Matplotlib", "Web Scraping"],
-    href: links.github,
+    href: "https://github.com/yunopo42/ULTIMATE-FINANCE-TERMINAL",
   },
   {
     name: "Teknofest Robotaxi",
@@ -113,7 +124,7 @@ export const projects: Project[] = [
     description:
       "Otonom sürüş senaryoları için OpenCV ile gerçek zamanlı şerit tespit hattı. Canny kenar tespiti, Hough dönüşümü, eşikleme ve kontur tespiti tekniklerini kullanarak sürekli video karelerinden şerit sınırlarını çıkarıyor.",
     tags: ["Python", "OpenCV", "NumPy", "Computer Vision"],
-    href: links.github,
+    href: "https://github.com/yunopo42/ROBOTAKSI",
   },
 ];
 
