@@ -14,7 +14,7 @@ export const profile = {
   summary:
     "KTO Karatay Üniversitesi'nde 4. sınıf bilgisayar mühendisliği öğrencisiyim (GPA 3.42, tam burslu); Lublin Teknoloji Üniversitesi'nde Erasmus+ ile yapay zekâ ve makine öğrenmesi üzerine bir dönem geçirdim. Yapay zekâ destekli sistemler, IoT otomasyonu ve full-stack geliştirme üzerine projeler üretiyorum; backend ve veritabanı tarafı en sevdiğim alan.",
   travelBlurb:
-    "Kod yazmadığım zamanlarda sırt çantamla yollardayım. 13 ülke gezdim ve gezdiğim her yeri kameraya alıp 3.000+ kişilik bir izleyici kitlesiyle paylaşıyorum.",
+    "Kod yazmadığım zamanlarda sırt çantamla yollardayım. 17 ülke gezdim ve gezdiğim her yeri kameraya alıp 3.000+ kişilik bir izleyici kitlesiyle paylaşıyorum.",
 };
 
 export const links = {
