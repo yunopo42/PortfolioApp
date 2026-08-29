@@ -3,7 +3,7 @@
 
 // Sitenin canlı adresi. Deploy sonrası gerçek domain ile güncelle —
 // sitemap, robots.txt ve sosyal medya kartları bu adresi kullanıyor.
-export const siteUrl = "https://yunusemreatmaz.vercel.app";
+export const siteUrl = "https://yunus-emre-atmaz.vercel.app";
 
 export const profile = {
   name: "Yunus Emre Atmaz",

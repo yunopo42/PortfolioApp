@@ -1,3 +1,4 @@
+import Link from "next/link";
 import IntroGate from "@/components/IntroGate";
 import SiteNav from "@/components/SiteNav";
 import Hero from "@/components/Hero";
@@ -23,10 +24,18 @@ export default function Page() {
       </main>
 
       <footer className="border-t border-line/60 px-6 py-8">
-        <p className="mx-auto max-w-5xl font-mono text-xs text-muted">
-          © {new Date().getFullYear()} {profile.name} · Next.js & Tailwind ile
-          yapıldı
-        </p>
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 font-mono text-xs text-muted sm:flex-row">
+          <p>
+            © {new Date().getFullYear()} {profile.name} · Next.js & Tailwind ile
+            yapıldı
+          </p>
+          <Link
+            href="/privacy"
+            className="transition hover:text-fg hover:underline underline-offset-4"
+          >
+            Privacy Policy
+          </Link>
+        </div>
       </footer>
     </IntroGate>
   );
