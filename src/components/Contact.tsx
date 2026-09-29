@@ -5,7 +5,7 @@ import Social from "./Social";
 
 export default function Contact() {
   return (
-    <Section id="iletisim" index="05" title="İletişim">
+    <Section id="iletisim" index="06" title="İletişim">
       <Reveal>
         <p className="max-w-2xl leading-relaxed text-muted">
           Staj, proje veya sadece sohbet — her türlü mesaja açığım. En hızlı

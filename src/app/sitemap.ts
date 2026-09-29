@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { siteUrl } from "@/data/content";
+import { designs, siteUrl } from "@/data/content";
 
 // Next.js bu dosyadan /sitemap.xml üretir.
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -16,5 +16,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.8,
     },
+    ...designs.map((d) => ({
+      url: `${siteUrl}/tasarimlar/${d.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
   ];
 }

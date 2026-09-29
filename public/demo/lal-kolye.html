@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LÂL — Çağlayan Pırlanta Kolye</title>
+<meta name="description" content="LÂL — kurgusal bir mücevher markası için konsept web sitesi: gerçek zamanlı 3D pırlanta kolyeler, kaydırmayla dönüşen koleksiyon.">
+<meta name="theme-color" content="#05070a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2305070a'/%3E%3Cpath d='M32 54 12 26l8-12h24l8 12z' fill='none' stroke='%23efe9df' stroke-width='2.6' stroke-linejoin='round'/%3E%3Cpath d='M12 26h40M24 14l-4 12 12 28 12-28-4-12' fill='none' stroke='%23efe9df' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@300;400;500;600&display=swap">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#05070a;
+  --ink:#efe9df;
+  --muted:rgba(239,233,223,.62);
+  --dim:rgba(239,233,223,.38);
+  --line:rgba(239,233,223,.14);
+  --ice:#cfe6ee;
+  --serif:"Cormorant","Cormorant Garamond",Georgia,serif;
+  --sans:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --ease:cubic-bezier(.19,1,.22,1);
+  --pad:clamp(16px,3.4vw,52px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+body{margin:0;color:var(--ink);font:400 15px/1.65 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.is-loading{overflow:hidden;height:100vh}
+body.is-dragging{user-select:none}
+h1,h2,h3,p,dl,dd,ul{margin:0;padding:0}
+ul{list-style:none}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+img{display:block;max-width:100%}
+em{font-style:italic}
+::selection{background:var(--ice);color:var(--bg)}
+:focus-visible{outline:1px solid var(--ice);outline-offset:4px}
+@media (hover:hover) and (pointer:fine){
+  body.has-cursor,body.has-cursor a,body.has-cursor button{cursor:none}
+}
+
+/* ---------- WebGL sahnesi ---------- */
+#gl{position:fixed;inset:0;width:100vw;height:100vh;z-index:-1;display:block}
+.no-webgl #gl{display:none}
+.no-webgl .hero{background:radial-gradient(60% 50% at 50% 38%,#1a222c,var(--bg))}
+
+.grain{position:fixed;inset:-50%;z-index:70;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  animation:grain 1.2s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-4%)}60%{transform:translate(-4%,-1%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+
+.kicker{font:500 11px/1.4 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- butonlar ---------- */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.8em;height:52px;padding:0 28px;border-radius:999px;
+  font:600 11px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--bg);background:var(--ink);overflow:hidden;isolation:isolate;
+  transition:color .6s var(--ease),transform .6s var(--ease)}
+.btn::before{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--ice);transform:translateY(102%);transition:transform .7s var(--ease);z-index:-1}
+.btn:hover::before{transform:none}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(239,233,223,.32)}
+.btn.ghost::before{background:var(--ink)}
+.btn.ghost:hover{color:var(--bg)}
+.btn-block{width:100%}
+
+/* ---------- yükleyici ---------- */
+.loader{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;grid-template-rows:auto 1fr auto;padding:26px var(--pad) 30px;
+  clip-path:inset(0 0 0 0);transition:clip-path 1.5s var(--ease)}
+.loader.is-done{clip-path:inset(0 0 100% 0)}
+.loader-top{display:flex;justify-content:space-between;align-items:baseline}
+.loader-top .brand-mark{font:400 30px/1 var(--serif);letter-spacing:.16em}
+.loader-count{align-self:center;justify-self:center;font:300 clamp(120px,24vw,360px)/1 var(--serif);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.loader-bar{height:1px;background:var(--line);position:relative;overflow:hidden}
+.loader-bar i{position:absolute;inset:0;background:var(--ink);transform-origin:left;transform:scaleX(0)}
+.loader-def{display:flex;justify-content:space-between;gap:24px;margin-top:18px;align-items:flex-end}
+.loader-def p{font:300 italic clamp(17px,1.7vw,22px)/1.35 var(--serif);max-width:34ch;color:var(--muted)}
+.loader-def p b{font-style:normal;font-weight:500;color:var(--ink)}
+
+/* ---------- üst menü ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:22px var(--pad);mix-blend-mode:difference;color:#fff}
+.brand{display:flex;align-items:baseline;gap:16px}
+.brand-mark{font:400 30px/1 var(--serif);letter-spacing:.16em}
+.brand-sub{font:500 10px/1 var(--sans);letter-spacing:.26em;text-transform:uppercase;opacity:.62}
+.menu{display:flex;gap:36px;font:500 11px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase}
+.menu a,.cart-btn{position:relative;padding:8px 0}
+.menu a::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .7s var(--ease)}
+.menu a:hover::after{transform:scaleX(1);transform-origin:left}
+.cart-btn{display:flex;align-items:center;gap:10px;font:500 11px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase}
+.cart-count{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 6px;border-radius:99px;border:1px solid currentColor;font-size:10px;letter-spacing:0;transition:transform .5s var(--ease)}
+.cart-count.bump{transform:scale(1.35)}
+
+/* ---------- açılış ---------- */
+.hero{position:relative;height:100vh;height:100svh;min-height:600px;overflow:clip}
+.hero-top{position:absolute;top:100px;left:var(--pad);right:var(--pad);display:flex;justify-content:space-between;gap:24px}
+.hero-lede{position:absolute;left:var(--pad);top:40%;max-width:300px}
+.hero-lede p{font:300 23px/1.32 var(--serif)}
+.hero-lede b{font-weight:500;color:var(--ice)}
+.hint{display:flex;align-items:center;gap:12px;margin-top:22px}
+.hint i{width:34px;height:1px;background:var(--dim);position:relative;overflow:hidden}
+.hint i::after{content:"";position:absolute;inset:0;background:var(--ink);animation:hint 2.4s var(--ease) infinite}
+@keyframes hint{0%{transform:translateX(-100%)}60%,100%{transform:translateX(100%)}}
+.hero-buy{position:absolute;right:var(--pad);top:40%;display:flex;flex-direction:column;align-items:flex-end;gap:12px;text-align:right}
+.hero-price{font:300 42px/1 var(--serif);margin-bottom:8px}
+.hero-price small{display:block;font:500 10px/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.hero-title{position:absolute;left:0;right:0;bottom:1.5vh;text-align:center;white-space:nowrap;
+  font:300 min(19.5vw,37vh)/.8 var(--serif);letter-spacing:-.035em;color:#f1ece4;mix-blend-mode:difference;pointer-events:none}
+.ln{display:block;overflow:clip;padding:.14em 0 .2em}
+.hero-title .ch{display:inline-block;transform:translateY(112%);transition:transform 1.8s var(--ease);transition-delay:calc(var(--i)*70ms + .35s)}
+.is-ready .hero-title .ch{transform:none}
+.hero-fade{transition:opacity 1.4s var(--ease) 1.1s,transform 1.6s var(--ease) 1.1s;opacity:0;transform:translateY(24px)}
+.is-ready .hero-fade{opacity:1;transform:none}
+
+/* ---------- detay ---------- */
+.detail{position:relative;height:430vh}
+.detail-sticky{position:sticky;top:0;height:100vh;overflow:hidden}
+.detail-kicker{position:absolute;top:100px;left:var(--pad)}
+.detail-steps{position:absolute;right:var(--pad);top:50%;transform:translateY(-50%);width:min(430px,36vw);height:360px}
+.detail-steps::before{content:"";position:absolute;inset:-40% -30% -40% -40%;background:radial-gradient(closest-side,rgba(5,7,10,.72),rgba(5,7,10,0));pointer-events:none}
+.step{position:absolute;left:0;right:0;top:0;opacity:0;transform:translateY(34px);transition:opacity .9s var(--ease),transform 1.2s var(--ease);pointer-events:none}
+.step.is-active{opacity:1;transform:none}
+.step-num{display:block;font:300 italic 88px/1 var(--serif);color:var(--ice);margin-bottom:6px}
+.step h3{font:300 clamp(40px,4.3vw,66px)/1 var(--serif);letter-spacing:-.02em;margin-bottom:22px}
+.step p{color:var(--muted);max-width:36ch}
+.detail-meter{position:absolute;left:var(--pad);bottom:44px;display:flex;align-items:center;gap:16px;font:500 11px/1 var(--sans);letter-spacing:.2em}
+.dm-bar{width:140px;height:1px;background:var(--line);position:relative}
+.dm-bar i{position:absolute;inset:0;background:var(--ink);transform-origin:left;transform:scaleX(0)}
+.hotspots{position:absolute;inset:0;pointer-events:none}
+.hs{position:absolute;left:0;top:0;opacity:0;transition:opacity .6s}
+.detail.is-live .hs{opacity:1}
+.hs i{display:block;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;border:1px solid #fff;background:rgba(255,255,255,.18);animation:pulse 2.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.45)}70%{box-shadow:0 0 0 16px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+.hs span{position:absolute;left:22px;top:-15px;white-space:nowrap;font:500 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;
+  padding:9px 13px;border:1px solid rgba(239,233,223,.22);border-radius:99px;background:rgba(5,7,10,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  opacity:0;transform:translateX(-8px);transition:opacity .6s var(--ease),transform .8s var(--ease)}
+.hs.is-on span{opacity:1;transform:none}
+.hs.is-on i{background:#fff}
+
+/* ---------- üzerinde ---------- */
+.onbody{position:relative;height:290vh}
+.onbody-sticky{position:sticky;top:0;height:100vh;overflow:hidden}
+.figure{position:absolute;left:0;top:0;width:1400px;height:980px;transform-origin:0 0;overflow:visible;pointer-events:none;will-change:transform}
+.fig-lines path{stroke-width:var(--sw,1.4);stroke-dasharray:1;stroke-dashoffset:1;opacity:.62}
+.fig-lines .soft{opacity:.26}
+.onbody-title{position:absolute;inset:0;z-index:2;font:300 clamp(56px,8.8vw,164px)/.84 var(--serif);letter-spacing:-.03em;pointer-events:none}
+.onbody-title span{position:absolute;display:block;will-change:transform,opacity;opacity:0}
+.onbody-title span:first-child{left:var(--pad);top:15vh}
+.onbody-title span:last-child{right:var(--pad);bottom:15vh}
+.onbody-cap{position:absolute;z-index:2;left:var(--pad);bottom:44px;max-width:36ch;opacity:0}
+.onbody-cap p{font:300 22px/1.35 var(--serif);margin-top:10px}
+
+/* ---------- koleksiyon ---------- */
+.collection{position:relative}
+.col-head{min-height:115vh;display:grid;align-content:center;justify-items:center;text-align:center;padding:0 var(--pad);gap:28px}
+.big{font:300 clamp(58px,9.4vw,168px)/.86 var(--serif);letter-spacing:-.035em;mix-blend-mode:difference;color:#fff}
+.big em{color:#fff}
+.col-lede{max-width:44ch;color:var(--muted)}
+.split .ln > *{display:inline-block;transform:translateY(110%);transition:transform 1.6s var(--ease)}
+.split .ln:nth-child(2) > *{transition-delay:.12s}
+.split.in .ln > *,.in .split .ln > *{transform:none}
+.rv{opacity:0;transform:translateY(38px);transition:opacity 1.1s var(--ease),transform 1.4s var(--ease);transition-delay:calc(var(--d,0)*80ms)}
+.rv.in,.in .rv{opacity:1;transform:none}
+
+.product{position:relative;height:175vh}
+.product-inner{position:sticky;top:0;height:100vh;display:flex;align-items:center;padding:0 var(--pad)}
+.product.card-right .product-inner{justify-content:flex-end}
+.product-card{width:min(480px,40vw)}
+.p-index{display:flex;align-items:center;gap:14px;font:500 11px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.p-index i{width:40px;height:1px;background:var(--line)}
+.p-index b{color:var(--ink);font-weight:500}
+.p-name{font:300 clamp(76px,9.2vw,158px)/.84 var(--serif);letter-spacing:-.035em;margin:18px 0 8px}
+.p-name .ln{padding-bottom:.12em}
+.p-sub{font:300 italic 25px/1.2 var(--serif);color:var(--ice)}
+.p-story{color:var(--muted);max-width:42ch;margin:20px 0 26px}
+.p-specs{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.p-specs div{padding:14px 12px 14px 0;border-bottom:1px solid var(--line)}
+.p-specs dt{font:500 10px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.p-specs dd{margin-top:8px;font:400 21px/1.1 var(--serif)}
+.p-buy{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:28px}
+.p-price small{display:block;font:500 10px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.p-price span{font:300 36px/1 var(--serif)}
+
+.col-nav{position:fixed;left:50%;bottom:26px;z-index:40;transform:translate(-50%,20px);display:flex;gap:26px;opacity:0;pointer-events:none;
+  transition:opacity .6s,transform .8s var(--ease);mix-blend-mode:difference;color:#fff}
+.col-nav.is-on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.col-nav a{display:flex;align-items:center;gap:10px;font:500 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;opacity:.45;transition:opacity .5s}
+.col-nav a i{width:14px;height:1px;background:currentColor;transition:width .7s var(--ease)}
+.col-nav a.is-active{opacity:1}
+.col-nav a.is-active i{width:38px}
+
+/* ---------- atölye ---------- */
+.craft{position:relative;padding:30vh var(--pad) 16vh}
+.craft .kicker{margin-bottom:34px}
+.craft-text{font:300 clamp(34px,4.7vw,80px)/1.06 var(--serif);letter-spacing:-.015em;max-width:19.5em}
+.craft-text .w{opacity:.13;transition:opacity .5s}
+.craft-text .w.on{opacity:1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);margin-top:16vh;border-top:1px solid var(--line)}
+.stats > div{padding:30px 20px 0 0}
+.stats b{display:block;font:300 clamp(52px,6.2vw,104px)/1 var(--serif);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.stats span{display:block;margin-top:14px}
+
+.marquee{position:relative;overflow:hidden;white-space:nowrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 0}
+.marquee-track{display:inline-flex;animation:marq 42s linear infinite}
+.marquee span{font:300 italic clamp(44px,6.4vw,110px)/1 var(--serif);padding-right:.4em}
+.marquee span b{font-style:normal;font-weight:300;font-size:.42em;vertical-align:middle;padding:0 .7em;color:var(--ice)}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ---------- randevu ---------- */
+.cta{position:relative;min-height:100vh;padding:22vh var(--pad) 30px;display:flex;flex-direction:column;justify-content:space-between;gap:10vh}
+.cta-link{display:block;font:300 clamp(86px,17vw,320px)/.8 var(--serif);letter-spacing:-.045em;mix-blend-mode:difference;color:#fff;margin-top:24px;width:max-content;max-width:100%}
+.cta-link .ln{padding-bottom:.16em}
+.cta-link em{display:inline-block;transition:transform 1s var(--ease)}
+.cta-link:hover em{transform:translateX(.12em)}
+.cta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;border-top:1px solid var(--line);padding-top:26px}
+.cta-grid p{margin-top:10px;font:300 21px/1.3 var(--serif)}
+.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:40px;color:var(--dim);font:500 10px/1.4 var(--sans);letter-spacing:.2em;text-transform:uppercase}
+.foot nav{display:flex;gap:26px}
+.foot a:hover{color:var(--ink)}
+
+/* ---------- sepet ---------- */
+.drawer{position:fixed;inset:0;z-index:85;pointer-events:none}
+.drawer-bg{position:absolute;inset:0;background:rgba(3,4,6,.62);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;transition:opacity .7s var(--ease)}
+.drawer-panel{position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);background:#0a0d11;border-left:1px solid var(--line);
+  transform:translateX(102%);transition:transform .9s var(--ease);display:flex;flex-direction:column;padding:26px var(--pad) 26px 30px}
+.drawer.is-open{pointer-events:auto}
+.drawer.is-open .drawer-bg{opacity:1}
+.drawer.is-open .drawer-panel{transform:none}
+.drawer-head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.drawer-head h2{font:300 44px/1 var(--serif)}
+.drawer-x{font:500 10px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.drawer-x:hover{color:var(--ink)}
+.drawer-list{flex:1;overflow:auto;padding:8px 0}
+.drawer-list li{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:18px 0;border-bottom:1px solid var(--line)}
+.drawer-list h3{font:400 28px/1 var(--serif)}
+.drawer-list p{grid-column:1;color:var(--dim);font-size:13px}
+.drawer-list .price{grid-row:1;grid-column:2;font:300 22px/1 var(--serif);text-align:right}
+.drawer-list button{grid-column:2;justify-self:end;font:500 10px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.drawer-list button:hover{color:var(--ink)}
+.drawer-empty{padding:28px 0;color:var(--muted);font:300 italic 22px/1.3 var(--serif)}
+.drawer-foot{padding-top:20px;border-top:1px solid var(--line);display:grid;gap:16px}
+.drawer-total{display:flex;justify-content:space-between;align-items:baseline}
+.drawer-total b{font:300 34px/1 var(--serif)}
+.drawer-note{color:var(--dim);font-size:12px;text-align:center}
+
+.toast{position:fixed;left:50%;bottom:26px;z-index:90;transform:translate(-50%,calc(100% + 60px));opacity:0;display:flex;align-items:center;gap:12px;
+  padding:14px 22px;border-radius:99px;background:var(--ink);color:var(--bg);font:500 12px/1 var(--sans);letter-spacing:.06em;transition:transform .8s var(--ease),opacity .5s}
+.toast.is-on{transform:translate(-50%,0);opacity:1}
+.toast i{width:8px;height:8px;border-radius:50%;background:var(--bg)}
+
+/* ---------- imleç ---------- */
+.cursor{position:fixed;left:0;top:0;z-index:95;pointer-events:none;mix-blend-mode:difference;display:none}
+.has-cursor .cursor{display:block}
+.cursor-dot,.cursor-ring{position:fixed;left:0;top:0;will-change:transform}
+.cursor-dot{width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:#fff}
+.cursor-ring > div{width:42px;height:42px;margin:-21px 0 0 -21px;border-radius:50%;border:1px solid rgba(255,255,255,.7);display:grid;place-items:center;
+  transition:transform .6s var(--ease),background .5s,border-color .5s}
+.cursor-ring span{font:600 9px/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:#000;opacity:0;transition:opacity .4s;transform:scale(.52)}
+.cursor.is-hover .cursor-ring > div{transform:scale(1.75);background:#fff;border-color:#fff}
+.cursor.is-drag .cursor-ring > div{transform:scale(1.9);background:#fff;border-color:#fff}
+.cursor.is-drag .cursor-ring span{opacity:1}
+
+/* ---------- mobil ---------- */
+@media (max-width:900px){
+  .menu,.brand-sub{display:none}
+  .hero-top{top:84px}
+  .hero-top .kicker:last-child{display:none}
+  .hero-lede{top:auto;bottom:calc(min(19.5vw,37vh) * .8 + 40px);max-width:none;right:var(--pad)}
+  .hero-lede p{font-size:20px}
+  .hero-buy{display:none}
+  .detail-kicker{top:84px}
+  .detail-steps{left:var(--pad);right:var(--pad);top:auto;bottom:88px;transform:none;width:auto;height:250px}
+  .step-num{font-size:56px}
+  .step h3{font-size:40px;margin-bottom:12px}
+  .onbody-title span:first-child{top:13vh}
+  .onbody-title span:last-child{bottom:auto;top:calc(13vh + 1.1em)}
+  .col-head{min-height:100vh}
+  .product{height:160vh}
+  .product-inner,.product.card-right .product-inner{align-items:flex-end;justify-content:flex-start;padding-bottom:28px}
+  .product-card{width:100%;padding-top:48px;background:linear-gradient(180deg,rgba(5,7,10,0),rgba(5,7,10,.82) 70px)}
+  .p-name{font-size:76px;margin-top:12px}
+  .p-story{display:none}
+  .p-specs{margin-top:18px}
+  .p-price span{font-size:30px}
+  .col-nav{display:none}
+  .stats{grid-template-columns:1fr 1fr;row-gap:40px}
+  .cta-grid{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  .grain,.marquee-track{animation:none}
+  *{transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body class="is-loading">
+
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="loader" aria-hidden="true">
+  <div class="loader-top"><span class="brand-mark">LÂL</span><span class="kicker">Işık toplanıyor</span></div>
+  <div class="loader-count"><span class="lc">000</span></div>
+  <div>
+    <div class="loader-bar"><i></i></div>
+    <div class="loader-def">
+      <p><b>lâl</b> (a.) 1. Kırmızı renkli değerli taş, yakut. &nbsp;2. (sf.) Hayranlıktan söyleyecek söz bulamayan.</p>
+      <span class="kicker">Konsept çalışma · 2026</span>
+    </div>
+  </div>
+</div>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="LÂL ana sayfa"><span class="brand-mark">LÂL</span><span class="brand-sub">Haute Joaillerie · İstanbul</span></a>
+  <nav class="menu" aria-label="Ana menü">
+    <a href="#koleksiyon">Koleksiyon</a>
+    <a href="#detay">Çağlayan</a>
+    <a href="#atolye">Atölye</a>
+    <a href="#randevu">Randevu</a>
+  </nav>
+  <button class="cart-btn" type="button" aria-label="Sepeti aç">Sepet <span class="cart-count">0</span></button>
+</header>
+
+<main>
+  <!-- AÇILIŞ -->
+  <section class="hero" id="top" data-drag>
+    <div class="hero-top hero-fade">
+      <span class="kicker">Koleksiyon N°01 — 2026</span>
+      <span class="kicker">18 ayar beyaz altın · GIA sertifikalı pırlanta</span>
+    </div>
+    <div class="hero-lede hero-fade">
+      <p>Işık suya, su taşa dönüştüğünde: <b data-stat="stones-0">312 pırlanta</b>, boyun hattından dökülen tek bir akış.</p>
+      <div class="hint kicker"><i></i><span class="hint-text">İmleci gezdirin — ışığı siz yönetin</span></div>
+    </div>
+    <div class="hero-buy hero-fade">
+      <div class="hero-price"><small>Çağlayan kolye</small><span data-price="0">₺ 2.450.000</span></div>
+      <button class="btn" type="button" data-add="0">Sepete ekle</button>
+      <a class="btn ghost" href="#koleksiyon">Koleksiyonu keşfet</a>
+    </div>
+    <h1 class="hero-title" aria-label="Çağlayan">
+      <span class="ln" aria-hidden="true"><span class="ch" style="--i:0">Ç</span><span class="ch" style="--i:1">a</span><span class="ch" style="--i:2">ğ</span><em class="ch" style="--i:3">l</em><em class="ch" style="--i:4">a</em><em class="ch" style="--i:5">y</em><em class="ch" style="--i:6">a</em><em class="ch" style="--i:7">n</em></span>
+    </h1>
+  </section>
+
+  <!-- DETAY -->
+  <section class="detail" id="detay" aria-label="Çağlayan yakından">
+    <div class="detail-sticky">
+      <p class="detail-kicker kicker">Yakından — Çağlayan</p>
+      <div class="hotspots" aria-hidden="true">
+        <div class="hs" data-a="drop"><i></i><span>Armut kesim · <b data-stat="drop-ct">0,42 ct</b></span></div>
+        <div class="hs" data-a="leaf"><i></i><span>Markiz yaprak · 36°</span></div>
+        <div class="hs" data-a="chain"><i></i><span>Tennis dizisi · <b data-stat="chain">148</b> taş</span></div>
+      </div>
+      <div class="detail-steps">
+        <article class="step is-active">
+          <span class="step-num">01</span>
+          <h3>Armut kesim <em>damlalar</em></h3>
+          <p>Merkezdeki en uzun damla <span data-stat="drop-ct">0,42 ct</span>. Uzunluklar kenarlara doğru kısalır; her damla, yakaladığı ışığı bir sonrakine devreder.</p>
+        </article>
+        <article class="step">
+          <span class="step-num">02</span>
+          <h3>Markiz <em>yapraklar</em></h3>
+          <p>İki markiz taş, bir yaprağın iki yüzü gibi aynı 36° açıyla birbirine yaslanır. Rüzgârda eğilen bir dalın taşa dönüşmüş hâli.</p>
+        </article>
+        <article class="step">
+          <span class="step-num">03</span>
+          <h3>Tennis <em>dizisi</em></h3>
+          <p>Boynu saran <span data-stat="chain">148</span> yuvarlak pırlanta, her biri kendi kasasında. Zincir gibi esner, tek bir ışık hattı gibi görünür.</p>
+        </article>
+      </div>
+      <div class="detail-meter"><span class="dm-cur">01</span><div class="dm-bar"><i></i></div><span>03</span></div>
+    </div>
+  </section>
+
+  <!-- ÜZERİNDE -->
+  <section class="onbody" id="uzerinde" aria-label="Çağlayan boyunda">
+    <div class="onbody-sticky">
+      <!-- Özgün moda illüstrasyonu: 100 SVG birimi = 1 3D birimi. Zincirin boyun arkasına geçtiği noktalar (±150, 20); JS bu iki noktayı 3D kolyeye hizalar. -->
+      <svg class="figure" viewBox="-700 -440 1400 980" width="1400" height="980" aria-hidden="true">
+        <defs>
+          <radialGradient id="skin" cx="0" cy="40" r="560" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#efe9df" stop-opacity=".09"/>
+            <stop offset=".5" stop-color="#efe9df" stop-opacity=".035"/>
+            <stop offset="1" stop-color="#efe9df" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <path class="fig-fill" fill="url(#skin)" opacity="0" d="M-128-262C-134-180-145-95-150-10C-153 45-188 82-268 104C-392 138-470 148-560 154C-470 200-380 262-300 332L-300 700L300 700L300 332C380 262 470 200 560 154C470 148 392 138 268 104C188 82 153 45 150-10C145-95 134-180 128-262Z"/>
+        <g class="fig-lines" fill="none" stroke="#efe9df" stroke-linecap="round" stroke-linejoin="round">
+          <path pathLength="1" data-o="0" d="M-200-318C-180-275-118-240-40-230C-15-227 15-227 40-230C118-240 180-275 200-318"/>
+          <path pathLength="1" data-o=".06" d="M-128-262C-134-180-145-95-150-10C-153 45-188 82-268 104C-392 138-545 155-720 172"/>
+          <path pathLength="1" data-o=".06" d="M128-262C134-180 145-95 150-10C153 45 188 82 268 104C392 138 545 155 720 172"/>
+          <path pathLength="1" data-o=".18" class="soft" d="M-110-205C-94-120-75-35-58 40"/>
+          <path pathLength="1" data-o=".18" class="soft" d="M110-205C94-120 75-35 58 40"/>
+          <path pathLength="1" data-o=".26" d="M-40 152C-95 132-170 122-250 126C-305 129-350 118-392 102"/>
+          <path pathLength="1" data-o=".26" d="M40 152C95 132 170 122 250 126C305 129 350 118 392 102"/>
+          <path pathLength="1" data-o=".32" d="M-40 152C-22 166 22 166 40 152"/>
+          <path pathLength="1" data-o=".36" d="M-560 154C-470 200-380 262-300 332C-250 376-215 420-190 470"/>
+          <path pathLength="1" data-o=".36" d="M560 154C470 200 380 262 300 332C250 376 215 420 190 470"/>
+        </g>
+      </svg>
+      <h2 class="onbody-title"><span>Tende,</span><span><em>ışık gibi.</em></span></h2>
+      <div class="onbody-cap">
+        <span class="kicker">Çağlayan · 42 cm</span>
+        <p>Boyun hattını bir akıntı gibi takip eder; en uzun damla köprücük kemiklerinin tam ortasına düşer.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- KOLEKSİYON -->
+  <section class="collection" id="koleksiyon">
+    <header class="col-head">
+      <p class="kicker rv">Koleksiyon · 05 kolye</p>
+      <h2 class="big split"><span class="ln"><span>Aynı taşlar,</span></span><span class="ln"><em>beş ayrı akıntı.</em></span></h2>
+      <p class="col-lede rv" style="--d:2">Kaydırdıkça her kolye çözülür ve bir sonrakine dönüşür. Hepsi İstanbul'da, tek bir ustanın elinden çıkar.</p>
+    </header>
+    <div id="products"></div>
+  </section>
+
+  <nav class="col-nav" aria-label="Koleksiyon"></nav>
+
+  <!-- ATÖLYE -->
+  <section class="craft" id="atolye">
+    <p class="kicker">Atölye</p>
+    <p class="craft-text">Her LÂL kolyesi, İstanbul'daki atölyemizde tek bir usta tarafından başlanır ve yine onun elinde tamamlanır. Taşlar tek tek seçilir, her tırnak elle kapatılır; bir Çağlayan ortalama 1.200 saatte biter.</p>
+    <div class="stats">
+      <div class="rv"><b data-count="1200">0</b><span class="kicker">saat el işçiliği</span></div>
+      <div class="rv" style="--d:1"><b>18K</b><span class="kicker">beyaz altın</span></div>
+      <div class="rv" style="--d:2"><b>GIA</b><span class="kicker">sertifikalı taşlar</span></div>
+      <div class="rv" style="--d:3"><b>∞</b><span class="kicker">ömür boyu bakım</span></div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Çağlayan<b>✦</b>Damla<b>✦</b>Yakamoz<b>✦</b>Defne<b>✦</b>Lale<b>✦</b></span>
+      <span>Çağlayan<b>✦</b>Damla<b>✦</b>Yakamoz<b>✦</b>Defne<b>✦</b>Lale<b>✦</b></span>
+    </div>
+  </div>
+
+  <!-- RANDEVU -->
+  <section class="cta" id="randevu" data-drag>
+    <div>
+      <p class="kicker rv">Özel gösterim · Nişantaşı, İstanbul</p>
+      <a class="cta-link split" href="mailto:randevu@alanadiniz.com"><span class="ln"><span>Randevu</span></span><span class="ln"><em>alın.</em></span></a>
+    </div>
+    <div>
+      <div class="cta-grid">
+        <div class="rv"><span class="kicker">Showroom</span><p>Nişantaşı, İstanbul</p></div>
+        <div class="rv" style="--d:1"><span class="kicker">Telefon</span><p>+90 (212) 000 00 00</p></div>
+        <div class="rv" style="--d:2"><span class="kicker">E-posta</span><p>randevu@alanadiniz.com</p></div>
+        <div class="rv" style="--d:3"><span class="kicker">Saatler</span><p>Salı–Cumartesi, 11.00–19.00</p></div>
+      </div>
+      <footer class="foot">
+        <span>© 2026 LÂL — konsept çalışma. Marka, ürünler ve fiyatlar kurgusaldır.</span>
+        <nav aria-label="Alt menü"><a href="#">KVKK</a><a href="#">Çerezler</a><a href="#">Instagram</a></nav>
+      </footer>
+    </div>
+  </section>
+</main>
+
+<div class="drawer" aria-hidden="true">
+  <div class="drawer-bg" data-close></div>
+  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-label="Sepet">
+    <header class="drawer-head"><h2>Sepet</h2><button class="drawer-x" type="button" data-close>Kapat ✕</button></header>
+    <ul class="drawer-list"></ul>
+    <p class="drawer-empty">Sepetiniz henüz boş. Koleksiyona bir göz atın.</p>
+    <footer class="drawer-foot">
+      <div class="drawer-total"><span class="kicker">Toplam</span><b>₺ 0</b></div>
+      <button class="btn btn-block" type="button" id="checkout">Ödemeye geç</button>
+      <p class="drawer-note">Ücretsiz sigortalı teslimat · 30 gün koşulsuz iade</p>
+    </footer>
+  </aside>
+</div>
+
+<div class="toast" role="status" aria-live="polite"><i></i><span></span></div>
+<div class="cursor" aria-hidden="true"><div class="cursor-ring"><div><span>Sürükle</span></div></div><div class="cursor-dot"></div></div>
+<noscript><p style="position:fixed;inset:auto 0 0;padding:16px;background:#efe9df;color:#05070a;text-align:center;z-index:200">Bu site en iyi JavaScript açıkken görüntülenir.</p></noscript>
+
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* =====================================================================
+   ÜRÜN VERİSİ — isim, metin ve fiyatları buradan düzenleyin
+   ===================================================================== */
+const PRODUCTS = [
+  { key:'caglayan', name:['Çağ','layan'], kicker:'Şelale kolye', sub:'Armut, markiz ve yuvarlak kesim pırlanta',
+    story:'Boyun hattından dökülen bir çağlayan. Merkeze doğru uzayan damlalar ve rüzgârda eğilmiş markiz yapraklar.',
+    metal:'18K beyaz altın', length:'42 cm', price:2450000, tint:[.62,.8,.95] },
+  { key:'damla', name:['Dam','la'], kicker:'Tektaş kolye', sub:'Armut kesim tektaş, pırlanta hale',
+    story:'Tek bir damla; düşmeden hemen önceki an. Merkezdeki armut kesim taşı ince bir pırlanta hale çevreler.',
+    metal:'18K beyaz altın', length:'40–45 cm', price:385000, tint:[.72,.82,.95] },
+  { key:'yakamoz', name:['Yaka','moz'], kicker:'Rivière kolye', sub:'Seylan safiri ve kademeli pırlanta',
+    story:'Gece denizinde bir anlık parıltı. Merkeze doğru büyüyen pırlantaların arasına Seylan safirleri serpildi.',
+    metal:'18K beyaz altın', length:'41 cm', price:890000, tint:[.28,.52,1] },
+  { key:'defne', name:['Def','ne'], kicker:'Defne dalı kolye', sub:'Zümrüt ve pırlanta markiz yapraklar',
+    story:'Zaferin ve sükûnetin dalı. Markiz kesim zümrüt ve pırlanta yapraklar boynu bir taç gibi sarar.',
+    metal:'18K beyaz altın', length:'40 cm', price:1120000, tint:[.3,.9,.6] },
+  { key:'lale', name:['La','le'], kicker:'Lale kolye', sub:'Yakut yapraklar, pırlanta sap',
+    story:"Lale Devri'nden bugüne: üç yakut yaprak, pırlanta bir sap ve iki ince yaprak.",
+    metal:'18K beyaz altın', length:'45 cm', price:465000, tint:[1,.42,.48] },
+];
+
+/* ---------- yardımcılar ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const smooth = t => t * t * (3 - 2 * t);
+const easeIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const fmtTL = n => '₺ ' + n.toLocaleString('tr-TR');
+const fmtCt = n => n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ct';
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+function rng(seed){ return () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+const V3 = THREE.Vector3, Q = THREE.Quaternion;
+
+/* =====================================================================
+   TAŞ GEOMETRİLERİ — briliant, markiz ve armut kesim (düz gölgeli fasetler)
+   ===================================================================== */
+function outlineRound(n = 16){ const o = []; for (let i = 0; i < n; i++){ const a = i / n * Math.PI * 2; o.push([Math.cos(a) * .5, Math.sin(a) * .5]); } return o; }
+function outlineMarquise(n = 24, w = .44){
+  const c = (.25 - w * w / 4) / w, R = c + w / 2, t0 = Math.atan2(.5, c), h = n / 2, o = [];
+  for (let i = 0; i < h; i++){ const t = -t0 + 2 * t0 * i / h; o.push([-c + R * Math.cos(t), R * Math.sin(t)]); }
+  for (let i = 0; i < h; i++){ const t = t0 - 2 * t0 * i / h; o.push([c - R * Math.cos(t), R * Math.sin(t)]); }
+  return o;
+}
+function outlinePear(n = 24, w = .62){
+  const o = [], k = (w / 2) / .7698;
+  for (let i = 0; i < n; i++){ const t = i / n * Math.PI * 2; o.push([-Math.sin(t) * Math.sin(t / 2) * k, .5 * Math.cos(t)]); }
+  return o;
+}
+function stoneGeometry(outline, o){
+  const { crown = .16, table = .56, crownMid = .8, girdle = .012, pav = .43, pavMid = .5 } = o;
+  const n = outline.length;
+  const ring = (s, z, off) => ({ off, p: outline.map((_, i) => {
+    const a = outline[i], b = outline[(i + 1) % n];
+    const x = off ? (a[0] + b[0]) / 2 : a[0], y = off ? (a[1] + b[1]) / 2 : a[1];
+    return new V3(x * s, y * s, z);
+  }) });
+  const rings = [ring(pavMid, -pav * .52, true), ring(1, -girdle, false), ring(1, girdle, false), ring(crownMid, crown * .55, true), ring(table, crown, false)];
+  const pos = [], nor = [], center = new V3(0, 0, (crown - pav) * .3);
+  const e1 = new V3(), e2 = new V3(), nn = new V3(), cc = new V3();
+  const tri = (a, b, c) => {
+    nn.crossVectors(e1.subVectors(b, a), e2.subVectors(c, a));
+    if (nn.lengthSq() < 1e-14) return;
+    cc.copy(a).add(b).add(c).multiplyScalar(1 / 3).sub(center);
+    if (nn.dot(cc) < 0){ const t = b; b = c; c = t; nn.negate(); }
+    nn.normalize();
+    for (const v of [a, b, c]){ pos.push(v.x, v.y, v.z); nor.push(nn.x, nn.y, nn.z); }
+  };
+  const culet = new V3(0, 0, -pav);
+  for (let i = 0; i < n; i++) tri(culet, rings[0].p[i], rings[0].p[(i + 1) % n]);
+  for (let k = 0; k < rings.length - 1; k++){
+    const A = rings[k], B = rings[k + 1];
+    for (let i = 0; i < n; i++){
+      const j = (i + 1) % n;
+      if (A.off === B.off){ tri(A.p[i], A.p[j], B.p[j]); tri(A.p[i], B.p[j], B.p[i]); }
+      else if (!A.off){ tri(A.p[i], A.p[j], B.p[i]); tri(B.p[i], A.p[j], B.p[j]); }
+      else { tri(B.p[i], B.p[j], A.p[i]); tri(A.p[i], B.p[j], A.p[j]); }
+    }
+  }
+  const top = new V3(0, 0, crown), T = rings[rings.length - 1];
+  for (let i = 0; i < n; i++) tri(top, T.p[i], T.p[(i + 1) % n]);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  return g;
+}
+function offsetOutline(pts, m){
+  const n = pts.length;
+  return pts.map((p, i) => { const a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n]; const tx = b[0] - a[0], ty = b[1] - a[1], l = Math.hypot(tx, ty) || 1; return [p[0] + ty / l * m, p[1] - tx / l * m]; });
+}
+function perimeter(pts){ let L = 0; for (let i = 0; i < pts.length; i++){ const a = pts[i], b = pts[(i + 1) % pts.length]; L += Math.hypot(b[0] - a[0], b[1] - a[1]); } return L; }
+function resample(pts, n){
+  const L = perimeter(pts), seg = i => { const a = pts[i % pts.length], b = pts[(i + 1) % pts.length]; return Math.hypot(b[0] - a[0], b[1] - a[1]); };
+  const out = []; let acc = 0, j = 0, sl = seg(0);
+  for (let k = 0; k < n; k++){
+    const target = k * L / n;
+    while (acc + sl < target && j < pts.length * 2){ acc += sl; j++; sl = seg(j); }
+    const a = pts[j % pts.length], b = pts[(j + 1) % pts.length], f = (target - acc) / (sl || 1);
+    out.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
+  }
+  return out;
+}
+
+/* =====================================================================
+   KOLYE MODELLERİ — tamamen kodla üretilir (1 birim ≈ 38 mm)
+   ===================================================================== */
+const TYPES = ['round', 'marq', 'pear', 'cup', 'prong', 'link', 'ring'];
+const STONES = ['round', 'marq', 'pear'];
+const WHITE = [1, 1, 1];
+const COL = { sapphire: [.1, .28, 1], emerald: [.06, .82, .34], ruby: [1, .06, .15] };
+const CT = { round: .00372, marq: .000667, pear: .001443 };
+const MARQ_PRONGS = [[0, .5], [0, -.5]];
+const PEAR_PRONGS = [[0, .5], [-.26, -.36], [.26, -.36]];
+const ROUND_PRONGS = [[.354, .354], [-.354, .354], [.354, -.354], [-.354, -.354]];
+const UP = new V3(0, 1, 0), IDQ = new Q();
+
+function orient(N, up){
+  const z = N.clone().normalize();
+  const y = up.clone().addScaledVector(z, -up.dot(z)).normalize();
+  const x = new V3().crossVectors(y, z);
+  return new Q().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+}
+
+// Boyun eğrisi: arka yüksekte, ön göğüse doğru sarkar
+function Neck(o = {}){
+  const a = o.a ?? 1.5, b = o.b ?? 1.2, drop = o.drop ?? 1, lift = o.lift ?? .3, dip = o.dip ?? 0, dipW = o.dipW ?? .4;
+  const P = t => {
+    const f = (1 + Math.cos(t)) / 2;
+    return new V3(a * Math.sin(t), -drop * Math.pow(f, 1.5) + lift * (1 - f) - dip * Math.exp(-(t * t) / (dipW * dipW)), b * Math.cos(t));
+  };
+  const S = 3000, ts = new Float32Array(S + 1), ls = new Float32Array(S + 1);
+  let L = 0, prev = P(-Math.PI);
+  for (let i = 0; i <= S; i++){ const t = -Math.PI + 2 * Math.PI * i / S, p = P(t); if (i) L += p.distanceTo(prev); ts[i] = t; ls[i] = L; prev = p; }
+  const tAt = l => { l = clamp(l, 0, L); let lo = 0, hi = S; while (hi - lo > 1){ const m = (lo + hi) >> 1; if (ls[m] < l) lo = m; else hi = m; } const f = (l - ls[lo]) / Math.max(1e-9, ls[hi] - ls[lo]); return ts[lo] + (ts[hi] - ts[lo]) * f; };
+  const lAt = t => { const x = (t + Math.PI) / (2 * Math.PI) * S, i = clamp(Math.floor(x), 0, S - 1); return ls[i] + (ls[i + 1] - ls[i]) * (x - i); };
+  const frame = t => {
+    const p = P(t), T = P(t + 1e-3).sub(P(t - 1e-3)).normalize();
+    const radial = new V3(Math.sin(t) / a, 0, Math.cos(t) / b).normalize();
+    let N = radial.clone().multiplyScalar(.9).add(new V3(0, .55, 0)).normalize();
+    const D = new V3().crossVectors(N, T).normalize(); if (D.y > 0) D.negate();
+    N = new V3().crossVectors(T, D).normalize(); if (N.dot(radial) < 0) N.negate();
+    return { p, T, N, D, t };
+  };
+  return { P, L, tAt, lAt, frame };
+}
+
+class Build {
+  constructor(){ this.parts = {}; for (const t of TYPES) this.parts[t] = []; this.anchors = {}; this.ct = 0; this.n = 0; this.meta = {}; }
+  push(type, p, q, s, c, k){ this.parts[type].push({ p: p.clone(), q: q.clone(), s: typeof s === 'number' ? new V3(s, s, s) : s.clone(), c: c || WHITE, k }); }
+  stone(type, p, N, up, size, c = WHITE, k = 0){
+    const q = orient(N, up);
+    this.push(type, p, q, size, c, k);
+    this.n++; this.ct += CT[type] * Math.pow(size * 38, 3);
+    return q;
+  }
+  cup(p, q, size, k){ this.push('cup', p, q, size * 1.02, null, k); }
+  prongs(p, q, size, pts, k){
+    const X = new V3(1, 0, 0).applyQuaternion(q), Y = new V3(0, 1, 0).applyQuaternion(q), Z = new V3(0, 0, 1).applyQuaternion(q);
+    const d = clamp(size * .12, .016, .03);
+    for (const [x, y] of pts) this.push('prong', p.clone().addScaledVector(X, x * size).addScaledVector(Y, y * size).addScaledVector(Z, .03 * size), IDQ, d, null, k);
+  }
+  link(a, b, r, k){
+    const d = new V3().subVectors(b, a), len = d.length(); if (len < 1e-5) return;
+    this.push('link', a.clone().add(b).multiplyScalar(.5), new Q().setFromUnitVectors(UP, d.normalize()), new V3(r * 2, len, r * 2), null, k);
+  }
+  ring(p, T, N, len, w, flip, k){
+    const x = T.clone().normalize();
+    let z = N.clone().addScaledVector(x, -N.dot(x)).normalize();
+    if (flip) z = new V3().crossVectors(z, x).normalize();
+    const y = new V3().crossVectors(z, x);
+    this.push('ring', p, new Q().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z)), new V3(len, w, w), null, k);
+  }
+}
+
+function cableChain(B, neck, tA, tB, sp = .032){
+  const l0 = neck.lAt(tA), l1 = neck.lAt(tB), n = Math.max(2, Math.floor((l1 - l0) / sp));
+  for (let i = 0; i < n; i++){ const f = neck.frame(neck.tAt(l0 + (i + .5) * (l1 - l0) / n)); B.ring(f.p, f.T, f.N, sp * 1.16, sp * .72, i % 2, f.t); }
+}
+
+// 01 — Çağlayan: fotoğraftaki kolye. Tennis dizisi + merkeze doğru uzayan saçak
+function buildCaglayan(){
+  const B = new Build(), neck = Neck({ a: 1.5, b: 1.2, drop: 1, lift: .3 });
+  const sp = .058, n = Math.floor(neck.L / sp);
+  let prev = null, first = null, best = 9;
+  for (let i = 0; i < n; i++){
+    const f = neck.frame(neck.tAt((i + .5) * neck.L / n));
+    const s = .048 + .008 * Math.max(0, Math.cos(f.t));
+    const q = B.stone('round', f.p, f.N, f.T, s, WHITE, f.t);
+    B.cup(f.p, q, s, f.t);
+    const back = f.p.clone().addScaledVector(f.N, -.02);
+    if (prev) B.link(prev, back, .007, f.t); else first = back;
+    prev = back;
+    if (Math.abs(f.t - 1.15) < best){ best = Math.abs(f.t - 1.15); B.anchors.chain = f.p.clone(); }
+  }
+  B.link(prev, first, .007, Math.PI);
+  B.meta.chain = n;
+  B.anchors.sideL = neck.P(-Math.PI / 2); B.anchors.sideR = neck.P(Math.PI / 2);
+
+  const U = 33, c = (U - 1) / 2, tF = 1.95, l0 = neck.lAt(-tF), l1 = neck.lAt(tF);
+  for (let j = 0; j < U; j++){
+    const u = (j - c) / c, au = Math.abs(u);
+    const f = neck.frame(neck.tAt(lerp(l0, l1, j / (U - 1))));
+    const { p, N, D, T } = f, k = f.t, up = D.clone().negate();
+    const Lf = 1 - .78 * Math.pow(au, 1.35), sc = .62 + .38 * Lf;
+    const at = (d, s = 0) => p.clone().addScaledVector(D, d).addScaledVector(T, s).addScaledVector(N, .004);
+    if ((j - c) % 2 === 0){
+      const r = .04 * sc, y0 = .05;
+      for (const cp of [at(y0, -.022 * sc), at(y0, .022 * sc), at(y0 + .036 * sc)]){ const q = B.stone('round', cp, N, up, r, WHITE, k); B.cup(cp, q, r, k); }
+      B.link(p.clone().addScaledVector(N, -.016), at(y0 + .036 * sc).addScaledVector(N, -.02), .006, k);
+      const lf = .118 * sc * (.85 + .3 * Lf), base = y0 + .036 * sc + .012;
+      for (const sg of [-1, 1]){
+        const dir = D.clone().applyAxisAngle(N, sg * .62);
+        const cen = at(base, sg * .018 * sc).addScaledVector(dir, lf * .5);
+        const q = B.stone('marq', cen, N, dir, lf, WHITE, k);
+        B.prongs(cen, q, lf, MARQ_PRONGS, k);
+        if (j === c + 4 && sg === 1) B.anchors.leaf = cen.clone();
+      }
+      if (au < .92){
+        const mL = .105 * sc * (.55 + .75 * Lf), mC = at(base + .02 + mL * .5);
+        const q1 = B.stone('marq', mC, N, up, mL, WHITE, k);
+        B.prongs(mC, q1, mL, MARQ_PRONGS, k);
+        const pL = .125 * sc * (.5 + .85 * Lf), gap = .014, pC = at(base + .02 + mL + gap + pL * .5);
+        const q2 = B.stone('pear', pC, N, up, pL, WHITE, k);
+        B.prongs(pC, q2, pL, PEAR_PRONGS, k);
+        B.link(at(base + .02 + mL - .006).addScaledVector(N, -.01), at(base + .02 + mL + gap + .008).addScaledVector(N, -.01), .005, k);
+        if (j === c){ B.anchors.drop = pC.clone(); B.meta.dropCt = CT.pear * Math.pow(pL * 38, 3); }
+      }
+    } else {
+      const r = .034 * sc, y0 = .045, cp = at(y0);
+      const q = B.stone('round', cp, N, up, r, WHITE, k); B.cup(cp, q, r, k);
+      const lf = .085 * sc, base = y0 + r * .5 + .006;
+      for (const sg of [-1, 1]){
+        const dir = D.clone().applyAxisAngle(N, sg * .5);
+        const cen = at(base, sg * .01).addScaledVector(dir, lf * .5);
+        const q2 = B.stone('marq', cen, N, dir, lf, WHITE, k);
+        B.prongs(cen, q2, lf, MARQ_PRONGS, k);
+      }
+      if (au < .96){
+        const pL = .085 * sc * (.6 + .5 * Lf), pC = at(base + .03 + pL * .5);
+        const q3 = B.stone('pear', pC, N, up, pL, WHITE, k);
+        B.prongs(pC, q3, pL, PEAR_PRONGS, k);
+      }
+    }
+  }
+  return B;
+}
+
+// 02 — Damla: armut kesim tektaş + pırlanta hale
+function buildDamla(){
+  const B = new Build(), neck = Neck({ a: 1.45, b: 1.15, drop: .95, lift: .3, dip: .3, dipW: .42 });
+  cableChain(B, neck, -Math.PI, Math.PI);
+  const { p, N, D, T } = neck.frame(0), up = D.clone().negate();
+  const at = (d, z = 0) => p.clone().addScaledVector(D, d).addScaledVector(N, z);
+  B.ring(at(.03), D, N, .075, .048, 1, 0);
+  let prev = at(.05, -.008);
+  for (const [d, s] of [[.075, .036], [.112, .032]]){ const c = at(d, .006), q = B.stone('round', c, N, T, s, WHITE, 0); B.cup(c, q, s, 0); B.link(prev, at(d, -.01), .005, 0); prev = at(d, -.01); }
+  const pL = .3, pC = at(.17 + pL * .5, .018);
+  const q = B.stone('pear', pC, N, up, pL, WHITE, 0);
+  B.prongs(pC, q, pL, [...PEAR_PRONGS, [0, -.5]], 0);
+  B.link(prev, at(.18, -.012), .005, 0);
+  const X = new V3(1, 0, 0).applyQuaternion(q), Y = new V3(0, 1, 0).applyQuaternion(q), Z = new V3(0, 0, 1).applyQuaternion(q);
+  const halo = offsetOutline(outlinePear(120).map(([x, y]) => [x * pL, y * pL]), .026), hs = .03;
+  for (const [x, y] of resample(halo, Math.floor(perimeter(halo) / (hs * 1.12)))){
+    const c = pC.clone().addScaledVector(X, x).addScaledVector(Y, y).addScaledVector(Z, -.014);
+    const qq = B.stone('round', c, N, up, hs, WHITE, 0); B.cup(c, qq, hs, 0);
+  }
+  return B;
+}
+
+// 03 — Yakamoz: kademeli rivière, safir aralıklı
+function buildYakamoz(){
+  const B = new Build(), neck = Neck({ a: 1.5, b: 1.2, drop: 1.02, lift: .3 }), tE = 2.2;
+  cableChain(B, neck, -Math.PI, -tE); cableChain(B, neck, tE, Math.PI);
+  const lc = neck.lAt(0), half = lc - neck.lAt(-tE);
+  const size = x => .046 + .09 * Math.pow(1 - clamp(x / half), 1.8);
+  const seq = [[0, size(0)]];
+  for (let x = 0, s = size(0); ;){ const nx = x + (s + size(x + s * .6)) * .5 + .012; if (nx > half) break; const ns = size(nx); seq.push([nx, ns]); x = nx; s = ns; }
+  let prev = null;
+  for (let i = -(seq.length - 1); i < seq.length; i++){
+    const [xx, ss] = seq[Math.abs(i)], f = neck.frame(neck.tAt(lc + Math.sign(i) * xx));
+    const blue = Math.abs(i) % 2 === 0 && Math.abs(i) <= 8;
+    const q = B.stone('round', f.p, f.N, f.T, ss, blue ? COL.sapphire : WHITE, f.t);
+    B.cup(f.p, q, ss, f.t);
+    if (ss > .07) B.prongs(f.p, q, ss, ROUND_PRONGS, f.t);
+    const back = f.p.clone().addScaledVector(f.N, -ss * .25);
+    if (prev) B.link(prev, back, .007, f.t);
+    prev = back;
+    if (i === 0){
+      const up = f.D.clone().negate(), pL = .15, pC = f.p.clone().addScaledVector(f.D, ss * .5 + .03 + pL * .5).addScaledVector(f.N, .004);
+      const q2 = B.stone('pear', pC, f.N, up, pL, COL.sapphire, f.t);
+      B.prongs(pC, q2, pL, PEAR_PRONGS, f.t);
+      B.link(f.p.clone().addScaledVector(f.D, ss * .4).addScaledVector(f.N, -.012), pC.clone().addScaledVector(f.D, -pL * .42).addScaledVector(f.N, -.012), .006, f.t);
+    }
+  }
+  return B;
+}
+
+// 04 — Defne: zümrüt ve pırlanta markiz yapraklardan defne dalı
+function buildDefne(){
+  const B = new Build(), neck = Neck({ a: 1.48, b: 1.18, drop: 1, lift: .3 }), tE = 2.05;
+  cableChain(B, neck, -Math.PI, -tE); cableChain(B, neck, tE, Math.PI);
+  const l0 = neck.lAt(-tE), l1 = neck.lAt(tE), lc = neck.lAt(0), half = lc - l0;
+  let prev = null;
+  for (let i = 0; i <= 90; i++){ const f = neck.frame(neck.tAt(lerp(l0, l1, i / 90))); const p = f.p.clone().addScaledVector(f.D, .015).addScaledVector(f.N, -.008); if (prev) B.link(prev, p, .0075, f.t); prev = p; }
+  for (const sg of [-1, 1]){
+    for (let x = .14, i = 0; x < half - .04; i++){
+      const f = neck.frame(neck.tAt(lc + sg * x)), { p, N, D, T } = f, g = x / half, lf = .165 - .075 * g;
+      const toC = T.clone().multiplyScalar(-sg), base = p.clone().addScaledVector(D, .015).addScaledVector(N, .006);
+      for (const side of [-1, 1]){
+        const dir = toC.clone().multiplyScalar(Math.cos(.7)).addScaledVector(D, side * Math.sin(.7)).normalize();
+        const cen = base.clone().addScaledVector(dir, lf * .5 + .006);
+        const q = B.stone('marq', cen, N, dir, lf, side > 0 ? COL.emerald : WHITE, f.t);
+        B.prongs(cen, q, lf, MARQ_PRONGS, f.t);
+      }
+      if (i % 2 === 1){ const bp = base.clone().addScaledVector(toC, -.052), q = B.stone('round', bp, N, T, .032, WHITE, f.t); B.cup(bp, q, .032, f.t); }
+      x += .105 + .02 * g;
+    }
+  }
+  const { p, N, D, T } = neck.frame(0), up = D.clone().negate();
+  const c0 = p.clone().addScaledVector(D, .02).addScaledVector(N, .012);
+  const q0 = B.stone('round', c0, N, T, .1, WHITE, 0); B.cup(c0, q0, .1, 0); B.prongs(c0, q0, .1, ROUND_PRONGS, 0);
+  const pL = .19, pC = p.clone().addScaledVector(D, .02 + .05 + .016 + pL * .5).addScaledVector(N, .006);
+  const q1 = B.stone('pear', pC, N, up, pL, COL.emerald, 0); B.prongs(pC, q1, pL, PEAR_PRONGS, 0);
+  B.link(c0.clone().addScaledVector(N, -.02), pC.clone().addScaledVector(D, -pL * .4).addScaledVector(N, -.012), .007, 0);
+  return B;
+}
+
+// 05 — Lale: yakut yapraklı lale, pırlanta sap
+function buildLale(){
+  const B = new Build(), neck = Neck({ a: 1.45, b: 1.15, drop: .95, lift: .3, dip: .24, dipW: .42 });
+  cableChain(B, neck, -Math.PI, Math.PI);
+  const { p, N, D, T } = neck.frame(0), up = D.clone().negate();
+  const O = p.clone().addScaledVector(D, .08).addScaledVector(N, .014);
+  const L2 = (x, y, z = 0) => O.clone().addScaledVector(T, x).addScaledVector(up, y).addScaledVector(N, z);
+  const dirA = a => up.clone().multiplyScalar(Math.cos(a)).addScaledVector(T, Math.sin(a)).normalize();
+  const marq = (bx, by, a, len, col, z = 0) => { const c = L2(bx, by, z).addScaledVector(dirA(a), len * .5), q = B.stone('marq', c, N, dirA(a), len, col, 0); B.prongs(c, q, len, MARQ_PRONGS, 0); };
+  B.ring(p.clone().addScaledVector(D, .03), D, N, .075, .048, 1, 0);
+  const by = -.28;
+  marq(0, by, 0, .25, COL.ruby, .012);
+  marq(-.04, by + .006, -.52, .21, COL.ruby);
+  marq(.04, by + .006, .52, .21, COL.ruby);
+  marq(-.024, by - .004, -1.12, .1, WHITE, -.004);
+  marq(.024, by - .004, 1.12, .1, WHITE, -.004);
+  let prev = null;
+  for (let i = 0; i < 6; i++){
+    const c = L2(0, by - .03 - i * .034, .004), s = .03 - i * .001, q = B.stone('round', c, N, T, s, WHITE, 0);
+    B.cup(c, q, s, 0);
+    const back = c.clone().addScaledVector(N, -.01); if (prev) B.link(prev, back, .005, 0); prev = back;
+  }
+  marq(-.012, by - .12, -.8, .13, WHITE);
+  marq(.012, by - .12, .8, .13, WHITE);
+  B.link(p.clone().addScaledVector(D, .06).addScaledVector(N, -.005), L2(0, by + .25, -.008), .006, 0);
+  return B;
+}
+
+/* ---------- modelleri havuzlara paketle (morf için eşit sayıda örnek) ---------- */
+const RAW = [buildCaglayan(), buildDamla(), buildYakamoz(), buildDefne(), buildLale()];
+const POOL = {}; for (const t of TYPES) POOL[t] = Math.max(1, ...RAW.map(b => b.parts[t].length));
+
+function pack(B){
+  const box = new THREE.Box3(); for (const t of TYPES) for (const it of B.parts[t]) box.expandByPoint(it.p);
+  const ctr = box.getCenter(new V3());
+  const out = { parts: {}, anchors: {}, n: B.n, ct: B.ct, meta: B.meta };
+  for (const k in B.anchors) out.anchors[k] = B.anchors[k].clone().sub(ctr);
+  const all = []; for (const t of TYPES) for (const it of B.parts[t]) all.push(it.p.clone().sub(ctr));
+  for (const t of TYPES){
+    const list = B.parts[t].slice().sort((a, b) => a.k - b.k), n = list.length, size = POOL[t];
+    const P = new Float32Array(size * 3), Qa = new Float32Array(size * 4), S = new Float32Array(size * 3), C = new Float32Array(size * 3).fill(1);
+    for (let s = 0; s < size; s++){
+      if (n){
+        const i = Math.floor(s * n / size), it = list[i], vis = s === 0 || Math.floor((s - 1) * n / size) !== i;
+        P[s * 3] = it.p.x - ctr.x; P[s * 3 + 1] = it.p.y - ctr.y; P[s * 3 + 2] = it.p.z - ctr.z;
+        it.q.toArray(Qa, s * 4);
+        if (vis){ S[s * 3] = it.s.x; S[s * 3 + 1] = it.s.y; S[s * 3 + 2] = it.s.z; }
+        C.set(it.c, s * 3);
+      } else {
+        const p = all[Math.floor(s * all.length / size)];
+        P[s * 3] = p.x; P[s * 3 + 1] = p.y; P[s * 3 + 2] = p.z; Qa[s * 4 + 3] = 1;
+      }
+    }
+    out.parts[t] = { P, Q: Qa, S, C };
+  }
+  return out;
+}
+const MODELS = RAW.map(pack);
+
+// Açılış için "akıntı": taşlar geniş bir girdapta dağınık başlar
+const DUST = (() => {
+  const R = rng(99), out = { parts: {} }, q = new Q(), e = new THREE.Euler();
+  for (const t of TYPES){
+    const n = POOL[t], P = new Float32Array(n * 3), Qa = new Float32Array(n * 4), S = new Float32Array(n * 3), C = new Float32Array(n * 3).fill(1);
+    for (let s = 0; s < n; s++){
+      const a = R() * Math.PI * 2, r = 2.6 + R() * 3.4;
+      P[s * 3] = Math.cos(a) * r; P[s * 3 + 1] = (R() - .5) * 3.4; P[s * 3 + 2] = Math.sin(a) * r - 1.2;
+      q.setFromEuler(e.set(R() * 6, R() * 6, R() * 6)).toArray(Qa, s * 4);
+    }
+    out.parts[t] = { P, Q: Qa, S, C };
+  }
+  return out;
+})();
+
+/* =====================================================================
+   ARAYÜZ — ürün kartları, sepet, imleç, animasyonlar
+   ===================================================================== */
+const productsEl = $('#products'), colNav = $('.col-nav');
+PRODUCTS.forEach((p, i) => {
+  const side = i % 2 === 0 ? 'card-left' : 'card-right';
+  productsEl.insertAdjacentHTML('beforeend', `
+  <article class="product ${side}" id="p-${p.key}" data-i="${i}" data-drag>
+    <div class="product-inner">
+      <div class="product-card">
+        <div class="p-index rv"><b>${String(i + 1).padStart(2, '0')}</b><span>/ 05</span><i></i><span>${p.kicker}</span></div>
+        <h3 class="p-name split"><span class="ln"><span>${p.name[0]}<em>${p.name[1]}</em></span></span></h3>
+        <p class="p-sub rv" style="--d:1">${p.sub}</p>
+        <p class="p-story rv" style="--d:2">${p.story}</p>
+        <dl class="p-specs rv" style="--d:3">
+          <div><dt>Taşlar</dt><dd data-stat="stones-${i}">—</dd></div>
+          <div><dt>Toplam karat</dt><dd data-stat="ct-${i}">—</dd></div>
+          <div><dt>Maden</dt><dd>${p.metal}</dd></div>
+          <div><dt>Uzunluk</dt><dd>${p.length}</dd></div>
+        </dl>
+        <div class="p-buy rv" style="--d:4">
+          <div class="p-price"><small>Fiyat</small><span>${fmtTL(p.price)}</span></div>
+          <button class="btn" type="button" data-add="${i}">Sepete ekle</button>
+        </div>
+      </div>
+    </div>
+  </article>`);
+  colNav.insertAdjacentHTML('beforeend', `<a href="#p-${p.key}"><i></i>${p.name.join('')}</a>`);
+});
+
+// Model verisinden gelen gerçek sayılar
+MODELS.forEach((m, i) => {
+  $$(`[data-stat="stones-${i}"]`).forEach(el => el.textContent = i === 0 && el.tagName === 'B' ? `${m.n} pırlanta` : `${m.n} taş`);
+  $$(`[data-stat="ct-${i}"]`).forEach(el => el.textContent = fmtCt(m.ct));
+});
+$$('[data-stat="drop-ct"]').forEach(el => el.textContent = fmtCt(MODELS[0].meta.dropCt));
+$$('[data-stat="chain"]').forEach(el => el.textContent = MODELS[0].meta.chain);
+$$('[data-price="0"]').forEach(el => el.textContent = fmtTL(PRODUCTS[0].price));
+if (!finePointer) $('.hint-text').textContent = 'Kaydırın — taşlar akıntıya kapılsın';
+
+// Atölye metnini kelimelere böl
+const craftText = $('.craft-text');
+craftText.innerHTML = craftText.textContent.trim().split(/\s+/).map(w => `<span class="w">${w}</span>`).join(' ');
+const craftWords = $$('.w', craftText);
+
+// Görünür olunca beliren öğeler
+const io = new IntersectionObserver(entries => {
+  for (const e of entries){
+    if (e.target.classList.contains('product-card')) e.target.classList.toggle('in', e.isIntersecting);
+    else if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  }
+}, { threshold: .25 });
+$$('.rv:not(.product-card .rv), .split:not(.product-card .split)').forEach(el => io.observe(el));
+$$('.product-card').forEach(el => io.observe(el));
+
+// Sayaçlar
+const countIO = new IntersectionObserver(entries => {
+  for (const e of entries){
+    if (!e.isIntersecting) continue;
+    countIO.unobserve(e.target);
+    const el = e.target, to = +el.dataset.count, t0 = performance.now();
+    const step = now => { const t = clamp((now - t0) / 1800); el.textContent = Math.round(to * (1 - Math.pow(1 - t, 4))).toLocaleString('tr-TR'); if (t < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+}, { threshold: .6 });
+$$('[data-count]').forEach(el => countIO.observe(el));
+
+/* ---------- sepet ---------- */
+const drawer = $('.drawer'), cartCount = $('.cart-count'), toastEl = $('.toast');
+let cart = [];
+try { cart = JSON.parse(localStorage.getItem('lal-sepet') || '[]').filter(i => PRODUCTS[i]); } catch { cart = []; }
+const saveCart = () => { try { localStorage.setItem('lal-sepet', JSON.stringify(cart)); } catch {} };
+function renderCart(){
+  cartCount.textContent = cart.length;
+  $('.drawer-list').innerHTML = cart.map((i, k) => `<li><h3>${PRODUCTS[i].name.join('')}</h3><span class="price">${fmtTL(PRODUCTS[i].price)}</span><p>${PRODUCTS[i].kicker} · ${PRODUCTS[i].metal}</p><button type="button" data-remove="${k}">Kaldır</button></li>`).join('');
+  $('.drawer-empty').style.display = cart.length ? 'none' : '';
+  $('.drawer-total b').textContent = fmtTL(cart.reduce((s, i) => s + PRODUCTS[i].price, 0));
+}
+let toastTimer;
+function toast(msg){ $('span', toastEl).textContent = msg; toastEl.classList.add('is-on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('is-on'), 2600); }
+function openCart(open){ drawer.classList.toggle('is-open', open); drawer.setAttribute('aria-hidden', String(!open)); if (open) $('.drawer-x').focus(); lenis && (open ? lenis.stop() : lenis.start()); }
+document.addEventListener('click', e => {
+  const add = e.target.closest('[data-add]');
+  if (add){ const i = +add.dataset.add; cart.push(i); saveCart(); renderCart(); toast(`${PRODUCTS[i].name.join('')} sepete eklendi`); cartCount.classList.add('bump'); setTimeout(() => cartCount.classList.remove('bump'), 400); energy = 1; return; }
+  const rem = e.target.closest('[data-remove]');
+  if (rem){ cart.splice(+rem.dataset.remove, 1); saveCart(); renderCart(); return; }
+  if (e.target.closest('.cart-btn')) return openCart(true);
+  if (e.target.closest('[data-close]')) return openCart(false);
+  if (e.target.closest('#checkout')){ toast(cart.length ? 'Bu bir konsept çalışma — gerçek satış yapılmaz' : 'Sepetiniz boş'); return; }
+  const a = e.target.closest('a[href^="#"]');
+  if (a && a.getAttribute('href').length > 1){ const t = $(a.getAttribute('href')); if (t){ e.preventDefault(); lenis ? lenis.scrollTo(t, { duration: 2.2 }) : t.scrollIntoView({ behavior: 'smooth' }); } }
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('is-open')) openCart(false); });
+renderCart();
+
+/* ---------- yumuşak kaydırma ---------- */
+history.scrollRestoration = 'manual';
+scrollTo(0, 0);
+const lenis = (window.Lenis && !reduceMotion) ? new window.Lenis({ lerp: .085, smoothWheel: true }) : null;
+lenis?.stop();
+
+/* ---------- imleç & fare ---------- */
+const mouse = { x: 0, y: 0, sx: 0, sy: 0, px: innerWidth / 2, py: innerHeight / 2 };
+let energy = 0, drag = null, yawDrag = 0, yawVel = 0;
+const cursorEl = $('.cursor'), cDot = $('.cursor-dot'), cRing = $('.cursor-ring');
+let ringX = mouse.px, ringY = mouse.py;
+if (finePointer) document.body.classList.add('has-cursor');
+addEventListener('pointermove', e => {
+  const nx = e.clientX / innerWidth * 2 - 1, ny = -(e.clientY / innerHeight * 2 - 1);
+  energy = Math.min(1, energy + Math.hypot(nx - mouse.x, ny - mouse.y) * .9);
+  mouse.x = nx; mouse.y = ny; mouse.px = e.clientX; mouse.py = e.clientY;
+  if (drag){ const dx = e.clientX - drag.x; drag.x = e.clientX; yawVel = dx * .0055; yawDrag += dx * .0055; }
+  if (finePointer){
+    const t = e.target;
+    const inter = t.closest && t.closest('a,button,[data-add]');
+    const dz = !inter && t.closest && t.closest('[data-drag]') && !t.closest('.product-card');
+    cursorEl.classList.toggle('is-hover', !!inter);
+    cursorEl.classList.toggle('is-drag', !!dz || !!drag);
+  }
+}, { passive: true });
+addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'mouse' || e.button !== 0) return;
+  if (e.target.closest('a,button,.drawer,.product-card,.detail-steps')) return;
+  drag = { x: e.clientX }; document.body.classList.add('is-dragging');
+});
+addEventListener('pointerup', () => { drag = null; document.body.classList.remove('is-dragging'); });
+function updateCursor(){
+  if (!finePointer) return;
+  ringX += (mouse.px - ringX) * .16; ringY += (mouse.py - ringY) * .16;
+  cDot.style.transform = `translate3d(${mouse.px}px,${mouse.py}px,0)`;
+  cRing.style.transform = `translate3d(${ringX}px,${ringY}px,0)`;
+}
+
+/* ---------- bölüm ölçüleri & kaydırma anahtar kareleri ---------- */
+const SEC = {};
+function layout(){
+  const y0 = scrollY, r = el => ({ top: el.getBoundingClientRect().top + y0, h: el.offsetHeight });
+  SEC.det = r($('#detay')); SEC.onb = r($('#uzerinde')); SEC.col = r($('#koleksiyon')); SEC.head = r($('.col-head'));
+  SEC.craft = r($('#atolye')); SEC.cta = r($('#randevu')); SEC.craftText = r(craftText);
+  SEC.products = $$('.product').map(r);
+  SEC.max = document.documentElement.scrollHeight - innerHeight;
+}
+let KF = [];
+function buildKF(){
+  const vh = innerHeight, A = MODELS[0].anchors, list = [];
+  const B0 = { m: 0, dist: 8.2, elev: .2, azim: 0, sx: 0, sy: .13, my: .1, fx: 0, fy: 0, fz: 0, yaw: 0, idle: 1, exp: 1, cut: 0 };
+  const F = a => ({ fx: a.x, fy: a.y, fz: a.z });
+  const k = (y, o) => list.push({ y, v: { ...B0, ...o } });
+  const d = SEC.det, dH = d.h - vh, Z = { sx: -.16, sy: 0, my: .17, idle: .15 };
+  k(0, {});
+  k(d.top + dH * .03, { ...Z, dist: 2.2, elev: .14, azim: .18, ...F(A.drop) });
+  k(d.top + dH * .27, { ...Z, dist: 2.0, elev: .1, azim: -.08, ...F(A.drop) });
+  k(d.top + dH * .40, { ...Z, dist: 2.0, elev: .32, azim: .5, yaw: -.1, ...F(A.leaf) });
+  k(d.top + dH * .60, { ...Z, dist: 1.85, elev: .22, azim: .28, yaw: -.1, ...F(A.leaf) });
+  k(d.top + dH * .73, { ...Z, dist: 2.3, elev: .12, azim: 1.05, yaw: -.3, ...F(A.chain) });
+  k(d.top + dH * .97, { ...Z, dist: 2.6, elev: .2, azim: .8, yaw: -.3, ...F(A.chain) });
+  // Tende: kolye önden, çizimin üzerine oturur; boynun arkasında kalan zincir gizlenir
+  const o = SEC.onb, oH = o.h - vh, FR = { dist: 10, elev: .05, sy: -.1, my: -.04, idle: 0, cut: 1 };
+  k(o.top - vh * .1, FR);
+  k(o.top + oH * .92, FR);
+  k(SEC.head.top + SEC.head.h * .5 - vh * .5, { dist: 8.6, sy: .02 });
+  SEC.products.forEach((p, i) => {
+    const v = { m: i, dist: 7.6, elev: .24, sx: i % 2 === 0 ? .2 : -.2, sy: .01, my: .2, yaw: i % 2 ? .25 : -.25 };
+    k(p.top - vh * .04, v); k(p.top + p.h - vh * .96, v);
+  });
+  const c = SEC.craft;
+  k(c.top + vh * .25, { m: 4, dist: 9.5, exp: .3, sy: 0 });
+  k(c.top + c.h - vh * .6, { m: 4, dist: 9.5, exp: .3, sy: 0 });
+  k(Math.min(SEC.max, SEC.cta.top + vh * .15), { m: 5, dist: 7.4, sy: .1, my: .12 });
+  k(SEC.max + 1, { m: 5, dist: 7.2, sy: .1, my: .12 });
+  list.sort((a, b) => a.y - b.y);
+  KF = list;
+}
+function sample(y){
+  if (!KF.length) return null;
+  if (y <= KF[0].y) return KF[0].v;
+  for (let i = 0; i < KF.length - 1; i++){
+    const a = KF[i], b = KF[i + 1];
+    if (y < b.y){ const t = smooth(clamp((y - a.y) / Math.max(1, b.y - a.y))), o = {}; for (const key in a.v) o[key] = a.v[key] + (b.v[key] - a.v[key]) * t; return o; }
+  }
+  return KF[KF.length - 1].v;
+}
+
+/* ---------- kaydırmaya bağlı DOM efektleri ---------- */
+const detailEl = $('#detay'), steps = $$('.step'), dmCur = $('.dm-cur'), dmBar = $('.dm-bar i');
+const hotspots = $$('.hs').map(el => ({ el, key: el.dataset.a }));
+const onbSticky = $('.onbody-sticky'), figure = $('.figure'), figFill = $('.fig-fill');
+const figPaths = $$('.fig-lines path').map(el => ({ el, o: +el.dataset.o }));
+const onbTitle = $$('.onbody-title span'), onbCap = $('.onbody-cap');
+const heroTitle = $('.hero-title'), navLinks = $$('a', colNav);
+let figLive = false, activeStep = -1, activeProduct = -1, craftOn = -1, detailP = -1;
+function scrollUI(y){
+  const vh = innerHeight;
+  heroTitle.style.transform = `translate3d(0,${y * .35}px,0)`;
+  heroTitle.style.opacity = 1 - clamp(y / (vh * .8));
+
+  const dp = clamp((y - SEC.det.top) / (SEC.det.h - vh));
+  detailP = dp;
+  const live = y > SEC.det.top - vh * .1 && y < SEC.det.top + SEC.det.h - vh * .9;
+  detailEl.classList.toggle('is-live', live && dp > .01 && dp < .99);
+  const s = dp < .34 ? 0 : dp < .67 ? 1 : 2;
+  if (s !== activeStep){ activeStep = s; steps.forEach((el, i) => el.classList.toggle('is-active', i === s)); hotspots.forEach((h, i) => h.el.classList.toggle('is-on', i === s)); dmCur.textContent = '0' + (s + 1); }
+  dmBar.style.transform = `scaleX(${dp})`;
+
+  // Tende: çizim kaydırdıkça kendini çizer, kolye üzerine oturur
+  const op = (y - SEC.onb.top) / (SEC.onb.h - vh);
+  figLive = op > -1.05 && op < 1.1;
+  if (figLive){
+    const draw = clamp((op + .12) / .5);
+    for (const p of figPaths) p.el.style.strokeDashoffset = 1 - easeIO(clamp((draw - p.o) / .6));
+    figFill.setAttribute('opacity', draw);
+    figure.style.opacity = 1 - clamp((op - .86) / .14);
+    const e = easeIO(clamp((op - .05) / .3));
+    onbTitle[0].style.transform = `translate3d(${-(1 - e) * 5}vw,0,0)`;
+    onbTitle[1].style.transform = `translate3d(${(1 - e) * 5}vw,0,0)`;
+    onbTitle[0].style.opacity = onbTitle[1].style.opacity = e * (1 - clamp((op - .88) / .12));
+    onbCap.style.opacity = clamp((op - .3) / .2) * (1 - clamp((op - .88) / .12));
+  }
+
+  let ap = -1;
+  SEC.products.forEach((p, i) => { if (y + vh * .5 >= p.top && y + vh * .5 < p.top + p.h) ap = i; });
+  colNav.classList.toggle('is-on', ap >= 0);
+  if (ap !== activeProduct){ activeProduct = ap; navLinks.forEach((a, i) => a.classList.toggle('is-active', i === ap)); }
+
+  const cp = clamp((y - (SEC.craftText.top - vh * .78)) / (SEC.craftText.h + vh * .3));
+  const on = Math.round(cp * craftWords.length);
+  if (on !== craftOn){ craftOn = on; craftWords.forEach((w, i) => w.classList.toggle('on', i < on)); }
+}
+
+/* =====================================================================
+   3D SAHNE
+   ===================================================================== */
+const DIAMOND_VS = /* glsl */`
+varying vec3 vWP; varying vec3 vN; varying vec3 vAx; varying vec3 vTint; varying float vId;
+void main(){
+  mat4 m = modelMatrix;
+  #ifdef USE_INSTANCING
+    m = m * instanceMatrix;
+  #endif
+  vec4 wp = m * vec4(position, 1.0);
+  vWP = wp.xyz;
+  mat3 nm = mat3(m);
+  vN = nm * normal;
+  vAx = nm * vec3(0.0, 0.0, 1.0);
+  #ifdef USE_INSTANCING_COLOR
+    vTint = instanceColor;
+  #else
+    vTint = vec3(1.0);
+  #endif
+  vId = float(gl_InstanceID);
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
+const DIAMOND_FS = /* glsl */`
+uniform samplerCube uEnv; uniform mat3 uEnvRot; uniform float uTime; uniform vec3 uLight; uniform float uFire;
+varying vec3 vWP; varying vec3 vN; varying vec3 vAx; varying vec3 vTint; varying float vId;
+vec3 env(vec3 d){ return textureCube(uEnv, uEnvRot * d).rgb; }
+float h1(float n){ return fract(sin(n) * 43758.5453123); }
+void main(){
+  vec3 N = normalize(vN);
+  vec3 I = normalize(vWP - cameraPosition);
+  if (dot(N, I) > 0.0) N = -N;
+  vec3 A = normalize(vAx);
+  float ndv = clamp(dot(N, -I), 0.0, 1.0);
+  vec3 R = reflect(I, N);
+  vec3 refl = env(R);
+  // Taşın içinde tek sekme: pavyon fasetinden yansıyıp taçtan çıkan ışık, renklere ayrılarak (dispersiyon)
+  vec3 lat = N - A * dot(N, A);
+  vec3 Nb = normalize(-A + lat * 1.4 + 0.25 * vec3(h1(vId * 1.31) - 0.5, h1(vId * 2.17) - 0.5, h1(vId * 3.73) - 0.5));
+  vec3 tR = normalize(reflect(refract(I, N, 1.0 / (2.42 - 0.12 * uFire)), Nb) + A * 0.5);
+  vec3 tG = normalize(reflect(refract(I, N, 1.0 / 2.42), Nb) + A * 0.5);
+  vec3 tB = normalize(reflect(refract(I, N, 1.0 / (2.42 + 0.14 * uFire)), Nb) + A * 0.5);
+  vec3 inner = vec3(env(tR).r, env(tG).g, env(tB).b) * vTint;
+  float F = 0.12 + 0.88 * pow(1.0 - ndv, 5.0);
+  vec3 col = inner * (1.0 - F) + refl * F * 1.1;
+  col = pow(max(col, vec3(0.0)), vec3(1.25)) * 1.12;
+  // Parıltı: ışığa hizalanan fasetler anlık yanar
+  float fac = h1(dot(floor(normalize(vN) * 6.0), vec3(1.7, 9.2, 23.1)) + vId * 0.37);
+  float spec = pow(max(dot(R, uLight), 0.0), 220.0);
+  col += spec * (1.5 + 7.0 * step(0.8, fac)) * mix(vec3(1.0), vTint, 0.35);
+  gl_FragColor = vec4(min(col, vec3(4.0)), 1.0);
+}`;
+const GLINT_VS = /* glsl */`
+attribute float aSize; attribute float aLife; attribute float aSeed;
+uniform float uScale;
+varying float vLife; varying float vSeed;
+void main(){
+  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  mv.xyz += normalize(-mv.xyz) * aSize * 0.8;
+  vLife = aLife; vSeed = aSeed;
+  gl_PointSize = min(pow(max(aSize, 0.0001), 0.55) * aLife * uScale * 0.85 / -mv.z, uScale * 0.075);
+  gl_Position = projectionMatrix * mv;
+}`;
+const GLINT_FS = /* glsl */`
+varying float vLife; varying float vSeed;
+void main(){
+  vec2 p = gl_PointCoord * 2.0 - 1.0;
+  float d = length(p);
+  float r1 = exp(-abs(p.y) * 55.0) * (1.0 - smoothstep(0.0, 1.0, abs(p.x)));
+  float r2 = exp(-abs(p.x) * 55.0) * (1.0 - smoothstep(0.0, 1.0, abs(p.y)));
+  vec2 q = mat2(0.7071, -0.7071, 0.7071, 0.7071) * p;
+  float r3 = (exp(-abs(q.y) * 90.0) * (1.0 - smoothstep(0.0, 0.5, abs(q.x))) + exp(-abs(q.x) * 90.0) * (1.0 - smoothstep(0.0, 0.5, abs(q.y)))) * 0.45;
+  float core = exp(-d * d * 40.0) * 1.6 + exp(-d * 7.0) * 0.2;
+  float v = (r1 + r2 + r3 + core) * vLife;
+  if (v < 0.004) discard;
+  vec3 col = mix(vec3(0.82, 0.92, 1.0), vec3(1.0, 0.95, 0.86), fract(vSeed * 7.13));
+  gl_FragColor = vec4(col * 2.2, clamp(v, 0.0, 1.0));
+}`;
+const BG_FS = /* glsl */`
+uniform float uTime; uniform vec2 uRes; uniform vec3 uTint; uniform vec2 uShift; uniform float uAmt;
+varying vec2 vUv;
+vec2 h22(vec2 p){ p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))); return fract(sin(p) * 43758.5453); }
+float edge(vec2 x, float t){
+  vec2 n = floor(x), f = fract(x);
+  float d1 = 8.0, d2 = 8.0;
+  for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++){
+    vec2 g = vec2(float(i), float(j));
+    vec2 o = 0.5 + 0.42 * sin(t + 6.2831 * h22(n + g));
+    vec2 r = g + o - f;
+    float d = dot(r, r);
+    if (d < d1){ d2 = d1; d1 = d; } else if (d < d2){ d2 = d; }
+  }
+  return sqrt(d2) - sqrt(d1);
+}
+void main(){
+  vec2 p = (vUv - 0.5) * vec2(uRes.x / uRes.y, 1.0);
+  vec2 sp = p - uShift;
+  float r = length(sp * vec2(0.75, 1.0));
+  float t = uTime;
+  // Su altı kostik ışığı
+  vec2 w = p * 2.4 + vec2(0.0, t * 0.03);
+  w += 0.28 * vec2(sin(w.y * 1.4 + t * 0.35), cos(w.x * 1.2 - t * 0.3));
+  float c = exp(-edge(w, t * 0.45) * 9.0) * 0.8 + exp(-edge(w * 1.9 + 7.3, t * 0.6) * 12.0) * 0.45;
+  vec3 col = mix(vec3(0.0060, 0.0085, 0.0125), vec3(0.0016, 0.0021, 0.0030), smoothstep(0.0, 0.95, r));
+  col += uTint * 0.018 * exp(-r * r * 3.0);
+  col += uTint * c * 0.010 * uAmt * (0.15 + 0.85 * exp(-r * r * 2.2));
+  col *= 1.0 - 0.4 * smoothstep(0.45, 1.15, length(p));
+  col += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 900.0;
+  gl_FragColor = vec4(max(col, vec3(0.0)), 1.0);
+}`;
+
+let has3D = false, ready3D = false;
+let renderer, scene, camera, composer, bloom, pivot, inner, bgMat, diamondMat, gMat, gGeo;
+const meshes = {}, CUR = {}, RND = {};
+const DPR = Math.min(devicePixelRatio || 1, finePointer ? 1.75 : 1.5);
+let W = innerWidth, H = innerHeight;
+
+function buildEnvScene(){
+  const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(40, 48, 24), new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false,
+    vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'varying vec3 vD; void main(){ float y = vD.y; vec3 c = mix(vec3(0.012, 0.016, 0.022), vec3(0.34, 0.37, 0.41), smoothstep(-0.05, 0.95, y)); c += vec3(0.05, 0.06, 0.07) * smoothstep(-0.2, -1.0, y); gl_FragColor = vec4(c, 1.0); }'
+  })));
+  const box = (w, h, I, x, y, z, col = 0xffffff) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(col).multiplyScalar(I), side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.lookAt(0, 0, 0); s.add(m);
+  };
+  box(16, 7, 2.2, 0, 20, 10);
+  box(2.4, 22, 3.2, -17, 4, 8);
+  box(2.4, 22, 3.2, 17, 4, 8);
+  box(22, 3, 1.6, 0, 6, -19, 0xcfe4ff);
+  box(8, 8, 1, 0, 2, 20);
+  const R = rng(7);
+  for (let i = 0; i < 34; i++){
+    const th = R() * Math.PI * 2, ph = R() * Math.PI * .62;
+    const d = new V3(Math.sin(ph) * Math.cos(th), Math.cos(ph) * .9 + .1 - (R() < .25 ? .6 : 0), Math.sin(ph) * Math.sin(th)).normalize().multiplyScalar(18);
+    const sz = .5 + R() * 1.3;
+    box(sz, sz, 6 + R() * 12, d.x, d.y, d.z, R() < .3 ? 0xd9ecff : R() < .5 ? 0xfff1dd : 0xffffff);
+  }
+  return s;
+}
+
+function init3D(){
+  renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(DPR);
+  renderer.setSize(W, H, false);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1;
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(30, W / H, .05, 100);
+
+  const envScene = buildEnvScene();
+  const cubeRT = new THREE.WebGLCubeRenderTarget(512, { type: THREE.HalfFloatType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
+  new THREE.CubeCamera(.1, 100, cubeRT).update(renderer, envScene);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(envScene, .035).texture;
+  scene.environmentIntensity = 1.25;
+
+  bgMat = new THREE.ShaderMaterial({
+    depthTest: false, depthWrite: false,
+    uniforms: { uTime: { value: 0 }, uRes: { value: new THREE.Vector2(W, H) }, uTint: { value: new THREE.Color(.6, .8, .95) }, uShift: { value: new THREE.Vector2() }, uAmt: { value: 1 } },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: BG_FS
+  });
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat);
+  bg.frustumCulled = false; bg.renderOrder = -10; scene.add(bg);
+
+  pivot = new THREE.Group(); inner = new THREE.Group(); pivot.add(inner); scene.add(pivot);
+
+  diamondMat = new THREE.ShaderMaterial({
+    uniforms: { uEnv: { value: cubeRT.texture }, uEnvRot: { value: new THREE.Matrix3() }, uTime: { value: 0 }, uLight: { value: new V3(.3, .8, .5).normalize() }, uFire: { value: 1 } },
+    vertexShader: DIAMOND_VS, fragmentShader: DIAMOND_FS
+  });
+  const metal = new THREE.MeshStandardMaterial({ color: 0xe8eaee, metalness: 1, roughness: .19 });
+  const metalDS = metal.clone(); metalDS.side = THREE.DoubleSide;
+  const GEO = {
+    round: stoneGeometry(outlineRound(16), { crown: .16, table: .56, crownMid: .8, pav: .43, pavMid: .5 }),
+    marq: stoneGeometry(outlineMarquise(24, .44), { crown: .085, table: .52, crownMid: .8, pav: .21, pavMid: .5 }),
+    pear: stoneGeometry(outlinePear(24, .62), { crown: .11, table: .54, crownMid: .8, pav: .27, pavMid: .5 }),
+    cup: (() => { const g = new THREE.CylinderGeometry(.53, .36, .34, 18, 1, true); g.rotateX(Math.PI / 2); g.translate(0, 0, -.13); return g; })(),
+    prong: new THREE.IcosahedronGeometry(.5, 1),
+    link: new THREE.CylinderGeometry(.5, .5, 1, 6, 1, true),
+    ring: new THREE.TorusGeometry(.5, .16, 6, 16),
+  };
+  const R = rng(42);
+  for (const t of TYPES){
+    const n = POOL[t], stone = STONES.includes(t);
+    const m = new THREE.InstancedMesh(GEO[t], stone ? diamondMat : t === 'cup' ? metalDS : metal, n);
+    m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    if (stone){ m.setColorAt(0, new THREE.Color(1, 1, 1)); m.instanceColor.setUsage(THREE.DynamicDrawUsage); }
+    m.frustumCulled = false;
+    inner.add(m); meshes[t] = m;
+    CUR[t] = { P: new Float32Array(n * 3), S: new Float32Array(n) };
+    const dir = new Float32Array(n * 3), ax = new Float32Array(n * 3), rr = new Float32Array(n), dl = new Float32Array(n), v = new V3();
+    for (let s = 0; s < n; s++){
+      v.set(R() - .5, R() - .5, R() - .5).normalize().toArray(dir, s * 3);
+      v.set(R() - .5, R() - .5, R() - .5).normalize().toArray(ax, s * 3);
+      rr[s] = R(); dl[s] = .6 * (s / n) + .4 * R();
+    }
+    RND[t] = { dir, ax, rr, dl };
+  }
+
+  // Yıldız parıltıları
+  const GN = 110;
+  gGeo = new THREE.BufferGeometry();
+  gGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(GN * 3), 3).setUsage(THREE.DynamicDrawUsage));
+  gGeo.setAttribute('aSize', new THREE.BufferAttribute(new Float32Array(GN), 1).setUsage(THREE.DynamicDrawUsage));
+  gGeo.setAttribute('aLife', new THREE.BufferAttribute(new Float32Array(GN), 1).setUsage(THREE.DynamicDrawUsage));
+  gGeo.setAttribute('aSeed', new THREE.BufferAttribute(Float32Array.from({ length: GN }, () => Math.random()), 1));
+  gMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uScale: { value: H * DPR } }, vertexShader: GLINT_VS, fragmentShader: GLINT_FS });
+  const glints = new THREE.Points(gGeo, gMat); glints.frustumCulled = false; glints.renderOrder = 5; inner.add(glints);
+
+  const rt = new THREE.WebGLRenderTarget(W * DPR, H * DPR, { type: THREE.HalfFloatType, samples: 4 });
+  composer = new EffectComposer(renderer, rt);
+  composer.setPixelRatio(DPR);
+  composer.setSize(W, H);
+  composer.addPass(new RenderPass(scene, camera));
+  bloom = new UnrealBloomPass(new THREE.Vector2(W, H), .38, .3, 1.7);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  applyMorph(DUST, MODELS[0], 0, .5, 2.4);
+  has3D = true; ready3D = true;
+}
+
+/* ---------- morf: taşlar akıntıya kapılıp yeni kolyeye dönüşür ---------- */
+const _m4 = new THREE.Matrix4(), _p = new V3(), _q = new Q(), _qa = new Q(), _qb = new Q(), _qs = new Q(), _s = new V3(), _ax = new V3(), _t = new V3(), _v = new V3();
+function applyMorph(A, Bm, t, amp = .9, swirl = 1, cut = 0){
+  for (const type of TYPES){
+    const mesh = meshes[type], n = POOL[type], a = A.parts[type], b = Bm.parts[type], r = RND[type], cur = CUR[type];
+    const arr = mesh.instanceMatrix.array, carr = mesh.instanceColor ? mesh.instanceColor.array : null;
+    for (let s = 0; s < n; s++){
+      const s3 = s * 3, s4 = s * 4;
+      const tt = t <= 0 ? 0 : t >= 1 ? 1 : clamp((t - r.dl[s] * .38) / .62);
+      const e = easeIO(tt), w = Math.sin(Math.PI * tt);
+      let x = a.P[s3] + (b.P[s3] - a.P[s3]) * e, y = a.P[s3 + 1] + (b.P[s3 + 1] - a.P[s3 + 1]) * e, z = a.P[s3 + 2] + (b.P[s3 + 2] - a.P[s3 + 2]) * e;
+      _qa.fromArray(a.Q, s4); _qb.fromArray(b.Q, s4); _q.slerpQuaternions(_qa, _qb, e);
+      // cut: boynun arkasında kalan parçalar (z < 0) küçülüp kaybolur
+      const cf = cut > 0 ? 1 - cut * smooth(clamp((.02 - z) / .16)) : 1;
+      if (w > 1e-4){
+        const ang = w * swirl * (.9 + r.rr[s] * 1.4), ca = Math.cos(ang), sa = Math.sin(ang), nx = x * ca + z * sa;
+        z = -x * sa + z * ca; x = nx;
+        x += r.dir[s3] * w * amp; y += r.dir[s3 + 1] * w * amp * .55; z += r.dir[s3 + 2] * w * amp;
+        _ax.fromArray(r.ax, s3); _qs.setFromAxisAngle(_ax, w * (2 + r.rr[s] * 3)); _q.multiply(_qs);
+      }
+      const k = (1 - .3 * w) * cf;
+      _s.set((a.S[s3] + (b.S[s3] - a.S[s3]) * e) * k, (a.S[s3 + 1] + (b.S[s3 + 1] - a.S[s3 + 1]) * e) * k, (a.S[s3 + 2] + (b.S[s3 + 2] - a.S[s3 + 2]) * e) * k);
+      _m4.compose(_p.set(x, y, z), _q, _s).toArray(arr, s * 16);
+      cur.P[s3] = x; cur.P[s3 + 1] = y; cur.P[s3 + 2] = z; cur.S[s] = _s.y;
+      if (carr){ carr[s3] = a.C[s3] + (b.C[s3] - a.C[s3]) * e; carr[s3 + 1] = a.C[s3 + 1] + (b.C[s3 + 1] - a.C[s3 + 1]) * e; carr[s3 + 2] = a.C[s3 + 2] + (b.C[s3 + 2] - a.C[s3 + 2]) * e; }
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    if (carr) mesh.instanceColor.needsUpdate = true;
+  }
+  rebuildCands();
+}
+
+/* ---------- parıltı adayları (görünür taşlar, büyükler daha sık) ---------- */
+let cands = [], candW = new Float32Array(0), candTotal = 0;
+function rebuildCands(){
+  cands = []; const w = [];
+  for (const t of STONES){ const S = CUR[t].S; for (let s = 0; s < S.length; s++) if (S[s] > .02){ cands.push(t, s); w.push(Math.pow(S[s], 1.4)); } }
+  candW = new Float32Array(w.length); candTotal = 0;
+  for (let i = 0; i < w.length; i++){ candTotal += w[i]; candW[i] = candTotal; }
+}
+function pickCand(){
+  if (!candTotal) return -1;
+  const r = Math.random() * candTotal; let lo = 0, hi = candW.length - 1;
+  while (lo < hi){ const m = (lo + hi) >> 1; if (candW[m] < r) lo = m + 1; else hi = m; }
+  return lo;
+}
+const gState = Array.from({ length: 110 }, () => ({ type: 'round', slot: 0, t: -Math.random() * 2, dur: 1, ok: false }));
+function updateGlints(dt){
+  const pos = gGeo.attributes.position.array, size = gGeo.attributes.aSize.array, life = gGeo.attributes.aLife.array;
+  const speed = 1 + energy * 2.2;
+  for (let i = 0; i < gState.length; i++){
+    const g = gState[i];
+    g.t += dt / g.dur * speed;
+    if (g.t >= 1){
+      const c = pickCand();
+      g.ok = c >= 0;
+      if (g.ok){ g.type = cands[c * 2]; g.slot = cands[c * 2 + 1]; }
+      g.t = -(.3 + Math.random() * 2.6) / speed; g.dur = .4 + Math.random() * .7;
+    }
+    if (!g.ok){ life[i] = 0; continue; }
+    const cur = CUR[g.type], s = g.slot;
+    pos[i * 3] = cur.P[s * 3]; pos[i * 3 + 1] = cur.P[s * 3 + 1]; pos[i * 3 + 2] = cur.P[s * 3 + 2];
+    size[i] = cur.S[s];
+    life[i] = g.t > 0 ? Math.pow(Math.sin(Math.PI * g.t), 2) : 0;
+  }
+  gGeo.attributes.position.needsUpdate = gGeo.attributes.aSize.needsUpdate = gGeo.attributes.aLife.needsUpdate = true;
+}
+
+/* ---------- kare döngüsü ---------- */
+let time = 0, lastNow = performance.now(), lastY = 0, scrollVel = 0, envSpin = 0;
+let started = false, introStart = 0, introT = 0, lastKey = '';
+const envEuler = new THREE.Euler(), tint = new THREE.Color();
+function render3D(y, dt){
+  const st = sample(y); if (!st) return;
+  if (started) introT = reduceMotion ? 1 : clamp((time - introStart - .1) / 2.8);
+  const mi = Math.floor(st.m), mf = st.m - mi, NM = MODELS.length;
+  let key;
+  if (introT < 1){
+    const target = Math.round(st.m) % NM;
+    key = `i${target}|${introT.toFixed(4)}`;
+    if (key !== lastKey) applyMorph(DUST, MODELS[target], introT, .5, 2.4);
+  } else {
+    key = `${mi % NM}|${mf.toFixed(4)}|${st.cut.toFixed(3)}`;
+    if (key !== lastKey) applyMorph(MODELS[mi % NM], MODELS[(mi + 1) % NM], mf, .9, 1, st.cut);
+  }
+  lastKey = key;
+
+  const ta = PRODUCTS[mi % NM].tint, tb = PRODUCTS[(mi + 1) % NM].tint, te = smooth(mf);
+  tint.setRGB(lerp(ta[0], tb[0], te), lerp(ta[1], tb[1], te), lerp(ta[2], tb[2], te));
+  bgMat.uniforms.uTint.value.copy(tint);
+  bgMat.uniforms.uTime.value = time;
+
+  // Döndürme: boşta salınım + sürükleme ataleti + fare
+  if (!drag){ yawDrag += yawVel; yawVel *= .93; }
+  mouse.sx += (mouse.x - mouse.sx) * .05; mouse.sy += (mouse.y - mouse.sy) * .05;
+  pivot.rotation.y = st.yaw + (Math.sin(time * .23) * .34 + yawDrag) * st.idle + mouse.sx * .18 * (.3 + .7 * st.idle);
+  pivot.rotation.x = -mouse.sy * .06 + Math.sin(time * .31) * .025 * st.idle;
+  inner.position.y = Math.sin(time * .7) * .03 * st.idle;
+  pivot.updateMatrixWorld(true);
+
+  // Kamera
+  const aspect = W / H, portrait = aspect < .95;
+  const dist = st.dist * (portrait ? Math.max(1, 1.22 / aspect) : Math.max(1, 1.5 / aspect));
+  _t.set(st.fx, st.fy, st.fz).applyMatrix4(inner.matrixWorld);
+  camera.position.set(_t.x + Math.sin(st.azim) * Math.cos(st.elev) * dist, _t.y + Math.sin(st.elev) * dist, _t.z + Math.cos(st.azim) * Math.cos(st.elev) * dist);
+  camera.lookAt(_t);
+  const sx = portrait ? 0 : st.sx, sy = portrait ? st.my : st.sy;
+  camera.setViewOffset(W, H, -sx * W, sy * H, W, H);
+  camera.updateMatrixWorld();
+  bgMat.uniforms.uShift.value.set(sx * aspect, sy);
+
+  // Işık fareyi (dokunmatikte kaydırmayı) takip eder → fasetler yanıp söner
+  envSpin += scrollVel * .00012 + dt * .04;
+  envEuler.set(-mouse.sy * .35, envSpin + mouse.sx * 1.1, 0);
+  _m4.makeRotationFromEuler(envEuler);
+  diamondMat.uniforms.uEnvRot.value.setFromMatrix4(_m4);
+  scene.environmentRotation.copy(envEuler);
+  diamondMat.uniforms.uLight.value.set(mouse.sx * .9 + Math.sin(time * .5) * .2, .55 + mouse.sy * .4, .75).normalize();
+  diamondMat.uniforms.uTime.value = time;
+  energy *= .95;
+  energy = Math.min(1, energy + Math.abs(scrollVel) * .00004);
+
+  updateGlints(dt);
+  renderer.toneMappingExposure = st.exp;
+
+  // 3D noktaları takip eden etiketler
+  if (detailP > 0 && detailP < 1){
+    for (const h of hotspots){
+      const a = MODELS[0].anchors[h.key]; if (!a) continue;
+      _v.copy(a).applyMatrix4(inner.matrixWorld).project(camera);
+      h.el.style.transform = `translate3d(${(_v.x * .5 + .5) * W}px,${(-_v.y * .5 + .5) * H}px,0)`;
+    }
+  }
+  // Çizimi kolyenin boyun arkasına geçtiği iki noktaya hizala (ölçek + konum)
+  if (figLive){
+    const a = MODELS[0].anchors;
+    _v.copy(a.sideL).applyMatrix4(inner.matrixWorld).project(camera);
+    const lx = (_v.x * .5 + .5) * W, ly = (-_v.y * .5 + .5) * H;
+    _v.copy(a.sideR).applyMatrix4(inner.matrixWorld).project(camera);
+    const rx = (_v.x * .5 + .5) * W, ry = (-_v.y * .5 + .5) * H;
+    const s = Math.max(.05, Math.hypot(rx - lx, ry - ly) / 300), top = onbSticky.getBoundingClientRect().top;
+    figure.style.transform = `translate3d(${(lx + rx) / 2 - 700 * s}px,${(ly + ry) / 2 - 460 * s - top}px,0) scale(${s})`;
+    figure.style.setProperty('--sw', (1.3 / s).toFixed(3));
+  }
+  composer.render(dt);
+}
+
+/* ---------- yükleyici ---------- */
+const lcEl = $('.lc'), lBar = $('.loader-bar i');
+let loadTarget = 8, loadShown = 0, loaded = false;
+function updateLoader(dt){
+  if (started) return;
+  loadShown = Math.min(loadTarget, loadShown + dt * 72);
+  lcEl.textContent = String(Math.floor(loadShown)).padStart(3, '0');
+  lBar.style.transform = `scaleX(${loadShown / 100})`;
+  if (loaded && loadShown >= 100) start();
+}
+function start(){
+  started = true; introStart = time;
+  document.body.classList.remove('is-loading');
+  document.body.classList.add('is-ready');
+  $('.loader').classList.add('is-done');
+  setTimeout(() => $('.loader')?.remove(), 1800);
+  lenis?.start();
+  layout(); buildKF();
+}
+
+function tick(now){
+  requestAnimationFrame(tick);
+  const dt = Math.min(.05, (now - lastNow) / 1000 || .016); lastNow = now; time += dt;
+  lenis?.raf(now);
+  const y = scrollY;
+  scrollVel = lerp(scrollVel, (y - lastY) / Math.max(dt, .001), .2); lastY = y;
+  updateLoader(dt);
+  updateCursor();
+  if (KF.length) scrollUI(y);
+  if (ready3D) render3D(y, dt);
+}
+
+let resizeRaf = 0;
+addEventListener('resize', () => {
+  cancelAnimationFrame(resizeRaf);
+  resizeRaf = requestAnimationFrame(() => {
+    W = innerWidth; H = innerHeight;
+    if (ready3D){
+      renderer.setSize(W, H, false); composer.setSize(W, H);
+      camera.aspect = W / H; camera.updateProjectionMatrix();
+      bgMat.uniforms.uRes.value.set(W, H); gMat.uniforms.uScale.value = H * DPR;
+    }
+    layout(); buildKF();
+  });
+});
+
+requestAnimationFrame(tick);
+(async () => {
+  await nextFrame(); await wait(30);
+  try { init3D(); }
+  catch (err){ console.error(err); document.body.classList.add('no-webgl'); }
+  loadTarget = 60;
+  await Promise.race([document.fonts.ready, wait(2500)]);
+  loadTarget = 85;
+  if (ready3D){
+    layout(); buildKF();
+    try { await renderer.compileAsync(scene, camera); } catch {}
+  }
+  layout(); buildKF();
+  loadTarget = 100; loaded = true;
+})();
+</script>
+</body>
+</html>

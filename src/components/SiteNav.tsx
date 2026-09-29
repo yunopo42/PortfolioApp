@@ -4,6 +4,7 @@ import ThemeToggle from "./ThemeToggle";
 const SECTIONS = [
   { href: "#hakkimda", label: "Hakkımda" },
   { href: "#projeler", label: "Projeler" },
+  { href: "#tasarimlar", label: "Tasarımlar" },
   { href: "#yetkinlikler", label: "Yetkinlikler" },
   { href: "#gezi", label: "Gezi" },
   { href: "#iletisim", label: "İletişim" },

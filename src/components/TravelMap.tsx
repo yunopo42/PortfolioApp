@@ -43,7 +43,7 @@ export default function TravelMap() {
         transition={{ duration: 0.6 }}
       >
         <h2 className="flex items-baseline gap-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-          <span className="font-mono text-sm text-travel">04</span>
+          <span className="font-mono text-sm text-travel">05</span>
           Gezi
         </h2>
         <div className="mt-4 h-px w-full bg-line" />

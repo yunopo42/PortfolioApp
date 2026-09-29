@@ -139,6 +139,92 @@ export const projects: Project[] = [
   },
 ];
 
+// Örnek site tasarımları. Her biri tek dosyalık, bağımsız bir HTML sayfası.
+// Yeni tasarım eklemek için:
+//   1. HTML dosyasını public/demo/<slug>.html olarak koy
+//   2. 1440×900 kapak görselini public/images/tasarimlar/<slug>.jpg olarak koy
+//   3. Aşağıdaki listeye bir kayıt ekle — /tasarimlar/<slug> sayfası kendiliğinden oluşur
+export type Design = {
+  slug: string;
+  name: string;
+  tagline: string;
+  /** Kartın ve sayfanın üstündeki küçük etiket. */
+  category: string;
+  /** Kartta görünen kısa özet. */
+  summary: string;
+  /** Tanıtım sayfasındaki uzun açıklama. */
+  description: string;
+  highlights: string[];
+  tags: string[];
+  year: number;
+  /** Kurgusal marka/ürün/fiyat içeriyorsa true — "konsept" rozeti gösterilir. */
+  concept?: boolean;
+};
+
+export const designDemoUrl = (slug: string) => `/demo/${slug}.html`;
+export const designCoverUrl = (slug: string) => `/images/tasarimlar/${slug}.jpg`;
+
+export const designs: Design[] = [
+  {
+    slug: "lal-kolye",
+    name: "LÂL — Pırlanta Kolye",
+    tagline: "3D mücevher e-ticaret sitesi",
+    category: "E-ticaret · Mücevher",
+    summary:
+      "Kurgusal bir mücevher markası için 3D e-ticaret sitesi. Kolyeler tarayıcıda gerçek zamanlı modelleniyor; kaydırdıkça biri dağılıp sıradakine dönüşüyor.",
+    description:
+      "Deneyim odaklı bir ürün sayfası denemesi. Açılıştaki Çağlayan kolyesi hazır bir 3D model değil: her taşı kodla üretilen briliant, markiz ve armut kesimlerden oluşuyor. Koleksiyon bölümünde aynı taşlar bir akıntıya kapılmış gibi dağılıp beş farklı kolyeye dönüşüyor.",
+    highlights: [
+      "Kodla üretilen 3D kolyeler — briliant, markiz ve armut kesim fasetler",
+      "Işığı renklere ayıran özel pırlanta shader'ı; imleç ışığın yönünü belirliyor",
+      "Kaydırmaya bağlı kamera yolculuğu ve 3D taşları takip eden etiketler",
+      "Kaydırdıkça kendini çizen illüstrasyonun üzerine oturan kolye",
+      "Çalışan sepet, ürün kartları ve mobil uyumlu düzen",
+    ],
+    tags: ["Three.js", "WebGL", "GLSL", "Lenis", "JavaScript"],
+    year: 2026,
+    concept: true,
+  },
+  {
+    slug: "iki-akinti",
+    name: "İki Akıntı",
+    tagline: "Boğaz'ın iki katmanlı akıntısı üzerine etkileşimli anlatım",
+    category: "Etkileşimli anlatım · Bilim",
+    summary:
+      "İstanbul Boğazı'nda üst üste, ters yönlere akan iki su katmanını anlatan etkileşimli bir hikâye sayfası.",
+    description:
+      "Boğaz'da yüzeydeki az tuzlu Karadeniz suyu güneye, altındaki tuzlu Akdeniz suyu kuzeye akar. Sayfa bu olayı imleçle gezilen bir boyuna kesit, 1680'deki Marsili deneyi ve kaydırdıkça Karadeniz'den Marmara'ya inen bir vapur yolculuğuyla anlatıyor.",
+    highlights: [
+      "İmleçle gezilen boyuna kesit: her noktanın derinliği, tuzluluğu ve akıntı yönü",
+      "Parçacıklarla canlandırılan iki katmanlı akıntı",
+      "Marsili'nin 1680 deneyini anlatan çizimler",
+      "Kaydırdıkça ilerleyen vapur rotası ve ölçü sayaçları",
+      "Akıntıya göre şekillenen, isteğe bağlı su sesi",
+    ],
+    tags: ["Canvas 2D", "SVG", "Web Audio", "JavaScript"],
+    year: 2026,
+  },
+  {
+    slug: "silikon-atolyesi",
+    name: "Silikon Atölyesi",
+    tagline: "Bilgisayar donanımı için 3D etkileşimli atlas",
+    category: "Eğitim · 3D etkileşim",
+    summary:
+      "Bilgisayar kasasının içini parça parça tanıtan 3D atlas. Parçaları incele, doğru sırayla birleştir, arızaları teşhis et, kendi sistemini tasarla.",
+    description:
+      "Orta seviye bir oyun bilgisayarının yedi temel parçasını 3D bir kasanın içinde anlatan etkileşimli bir öğrenme aracı. Öğren, Birleştir, Teşhis ve Tasarla olmak üzere dört modu var; sisteme güç verildiğinde veri akışı ve ısı haritası canlı olarak izlenebiliyor.",
+    highlights: [
+      "Dört mod: Öğren, Birleştir, Teşhis, Tasarla",
+      "Kaydırdıkça kasanın içinde dolaşan dokuz duraklı kamera turu",
+      "Sürükle-bırak kurulum; sıra yanlışsa sahne durup nedenini söylüyor",
+      "Altı arıza vakası, canlı veri akışı ve termal kamera görünümü",
+      "Seçilen parçalara göre güç bütçesi hesabı",
+    ],
+    tags: ["Three.js", "WebGL", "Web Audio", "JavaScript"],
+    year: 2026,
+  },
+];
+
 export const skills = [
   {
     group: "Diller",
