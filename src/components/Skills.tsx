@@ -4,7 +4,7 @@ import Reveal from "./Reveal";
 
 export default function Skills() {
   return (
-    <Section id="yetkinlikler" index="03" title="Yetkinlikler">
+    <Section id="yetkinlikler" index="04" title="Yetkinlikler">
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {skills.map((s, i) => (
           <Reveal key={s.group} delay={i * 0.05}>

@@ -4,6 +4,7 @@ import SiteNav from "@/components/SiteNav";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
 import Projects from "@/components/Projects";
+import Designs from "@/components/Designs";
 import Skills from "@/components/Skills";
 import TravelMap from "@/components/TravelMap";
 import Contact from "@/components/Contact";
@@ -18,6 +19,7 @@ export default function Page() {
         <Hero />
         <About />
         <Projects />
+        <Designs />
         <Skills />
         <TravelMap />
         <Contact />

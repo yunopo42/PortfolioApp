@@ -31,6 +31,18 @@ düzenlemek yeterli — bileşenler veriyi oradan okur.
 
 Profil fotoğrafı: `public/profil.jpg` (şu an yer tutucu).
 
+### Site tasarımları
+
+"Site Tasarımları" bölümündeki her tasarım tek dosyalık, bağımsız bir HTML
+sayfası. Yeni tasarım eklemek için:
+
+1. HTML dosyasını `public/demo/<slug>.html` olarak koy.
+2. 1440×900 kapak görselini `public/images/tasarimlar/<slug>.jpg` olarak koy.
+3. `src/data/content.ts` içindeki `designs` listesine bir kayıt ekle.
+
+`/tasarimlar/<slug>` tanıtım sayfası build sırasında kendiliğinden üretilir;
+canlı önizleme ziyaretçi "başlat"a basana kadar yüklenmez.
+
 ## Mimari notlar
 
 - `src/app/page.tsx` sunucu bileşeni; giriş animasyonu (`IntroGate`) siteyi

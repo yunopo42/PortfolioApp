@@ -1,0 +1,632 @@
+<title>İki Akıntı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+<style>
+:root{
+  color-scheme:dark;
+  --ink:#0A1826;--ink-2:#0E2132;--line:#1E3549;
+  --paper:#E4EBEE;--muted:#8A9EAD;--dim:#5E768B;
+  --aqua:#7FD6CB;--aqua-d:#4E9E95;--amber:#E8B04B;--amber-d:#A97A2A;--foam:#E9E4D0;
+  --display:"Big Shoulders Display","Big Shoulders","Oswald","Arial Narrow",sans-serif;
+  --serif:"Newsreader","Iowan Old Style",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --cut:55%;
+}
+html{background:var(--ink)}
+body{margin:0;background:var(--ink);color:var(--paper);font:400 18px/1.6 var(--serif);padding-inline:clamp(16px,4vw,48px);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin-inline:auto}
+::selection{background:var(--amber);color:var(--ink)}
+:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+
+.topbar{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;padding-block:22px 0;font:500 11px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+.hero{padding-block:clamp(28px,5vw,60px) 28px;overflow:clip}
+.title-wrap{position:relative}
+.title{margin:0;font:900 clamp(76px,17.5vw,236px)/.9 var(--display);text-transform:uppercase;letter-spacing:0}
+.title span{display:block;white-space:nowrap;padding-block:.06em;will-change:transform}
+.t-top{color:var(--aqua);clip-path:polygon(-60% -60%,160% -60%,160% var(--cut),-60% var(--cut))}
+.t-bot{position:absolute;inset:0;color:var(--amber);clip-path:polygon(-60% var(--cut),160% var(--cut),160% 160%,-60% 160%)}
+.title-wrap::after{content:"";position:absolute;left:0;right:0;top:var(--cut);height:1px;background:linear-gradient(90deg,var(--aqua),var(--foam) 50%,var(--amber));opacity:.55}
+.cut-label{position:absolute;right:0;top:var(--cut);transform:translateY(8px);font:500 10.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+.hero-meta{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px 56px;margin-top:clamp(28px,4vw,48px);align-items:end}
+.lede{margin:0;max-width:58ch;font-size:clamp(18px,1.6vw,21px);line-height:1.55;text-wrap:pretty}
+.legend{list-style:none;margin:0;padding:0;display:grid;gap:16px;font:400 13px/1.45 var(--mono);color:var(--muted)}
+.legend li{display:grid;grid-template-columns:30px 1fr;column-gap:12px}
+.legend b{color:var(--paper);font-weight:500;letter-spacing:.03em}
+.legend span{grid-column:2}
+.sw{grid-row:span 2;width:30px;height:8px;margin-top:6px}
+.sw.aqua{background:repeating-linear-gradient(90deg,var(--aqua) 0 7px,transparent 7px 10px)}
+.sw.amber{background:repeating-linear-gradient(90deg,var(--amber) 0 7px,transparent 7px 10px)}
+
+.stage{padding-bottom:clamp(64px,9vw,112px)}
+.canvas-box{position:relative;height:clamp(360px,60vh,620px);border-block:1px solid var(--line);background:var(--ink)}
+#sim{display:block;width:100%;height:100%;touch-action:pan-y;cursor:crosshair}
+.panel{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:28px 56px;padding-top:24px}
+.panel-h{font:500 10.5px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:0 0 14px}
+.panel-h b{color:var(--muted);font-weight:500}
+.readout{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:20px;margin:0}
+.readout>div{display:grid;gap:6px;align-content:start;min-width:0;border-top:1px solid var(--line);padding-top:10px}
+.readout dt{font:500 10.5px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.readout dd{margin:0;display:grid;gap:3px}
+.readout .v{font:500 clamp(18px,1.7vw,23px)/1.15 var(--mono);font-variant-numeric:tabular-nums;color:var(--paper);white-space:nowrap}
+.readout .s{font:400 12px/1.35 var(--mono);color:var(--muted)}
+.chip{display:inline-block;width:.55em;height:.55em;margin-right:.4em;vertical-align:.1em;background:var(--aqua);transition:background .3s}
+
+.controls{display:grid;gap:12px;align-content:start}
+.wind-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font:500 10.5px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.wind-head output{color:var(--paper);font-size:13px;letter-spacing:.06em}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;margin:0;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:3px;background:linear-gradient(90deg,var(--aqua),var(--foam) 50%,var(--amber))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-7.5px;border-radius:50%;background:var(--ink);border:2px solid var(--paper)}
+input[type=range]::-moz-range-track{height:3px;background:linear-gradient(90deg,var(--aqua),var(--foam) 50%,var(--amber))}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--ink);border:2px solid var(--paper)}
+.wind-ends{display:flex;justify-content:space-between;font:400 12px/1 var(--mono);color:var(--muted);margin-top:-4px}
+.note{font:400 12px/1.5 var(--mono);color:var(--muted);margin:0}
+.note b{color:var(--paper);font-weight:500;font-variant-numeric:tabular-nums}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.btn{font:500 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--paper);background:transparent;border:1px solid var(--line);padding:12px 15px;cursor:pointer;transition:border-color .2s,background-color .2s,color .2s}
+.btn:hover{border-color:var(--muted)}
+.btn[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+
+.chapter{border-top:1px solid var(--line);padding-block:clamp(64px,9vw,120px)}
+.kicker{font:500 11px/1.3 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+h2{font:800 clamp(46px,6.6vw,88px)/.92 var(--display);text-transform:uppercase;margin:0 0 30px;text-wrap:balance}
+.prose p{margin:0 0 1.1em;max-width:60ch;text-wrap:pretty}
+
+.marsili{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px 72px;align-items:center}
+.marsili figure{margin:0;display:grid;gap:14px;justify-items:start}
+.marsili svg{width:100%;max-width:440px;height:auto;display:block}
+figcaption{font:400 12px/1.5 var(--mono);color:var(--muted);max-width:46ch}
+.svg-lab{font:500 10.5px var(--mono);letter-spacing:.1em;fill:var(--muted)}
+.svg-lab.a{fill:var(--aqua)}.svg-lab.b{fill:var(--amber)}
+.fl-r{stroke:var(--aqua);stroke-width:2;stroke-linecap:round;stroke-dasharray:1 15;opacity:.55;animation:dashR 1.1s linear infinite}
+.fl-l{stroke:var(--amber);stroke-width:2;stroke-linecap:round;stroke-dasharray:1 15;opacity:.5;animation:dashL 2.2s linear infinite}
+@keyframes dashR{to{stroke-dashoffset:-16}}
+@keyframes dashL{to{stroke-dashoffset:16}}
+
+.measures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px 40px;margin:0 0 clamp(56px,7vw,96px);padding:0;list-style:none}
+.measures li{border-top:1px solid var(--line);padding-top:18px;display:grid;gap:10px;align-content:start}
+.num{font:800 clamp(68px,9vw,128px)/.85 var(--display);font-variant-numeric:tabular-nums;color:var(--paper)}
+.num small{font:500 .22em/1 var(--mono);letter-spacing:.06em;color:var(--muted);margin-left:.35em;vertical-align:.15em}
+.measures p{margin:0;font-size:16px;line-height:1.45;color:var(--muted);max-width:30ch}
+
+.budget{display:grid;gap:22px;margin-bottom:36px}
+.flow{display:grid;gap:10px}
+.flow-label{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;font:500 13px/1.4 var(--mono);color:var(--muted)}
+.flow-label b{color:var(--paper);font-weight:500;font-variant-numeric:tabular-nums}
+.bar{height:30px;background-size:24px 100%}
+.bar.south{width:100%;transform-origin:left center;background-image:linear-gradient(90deg,var(--aqua) 0 15px,var(--aqua-d) 15px 24px);animation:stripeR .7s linear infinite}
+.bar.north{width:50%;margin-left:auto;transform-origin:right center;background-image:linear-gradient(90deg,var(--amber-d) 0 9px,var(--amber) 9px 24px);animation:stripeL 1.5s linear infinite}
+.budget.play .bar.south{animation:grow 1.8s cubic-bezier(.2,.7,.1,1) both,stripeR .7s linear infinite}
+.budget.play .bar.north{animation:grow 1.8s .25s cubic-bezier(.2,.7,.1,1) both,stripeL 1.5s linear infinite}
+@keyframes stripeR{to{background-position-x:24px}}
+@keyframes stripeL{to{background-position-x:-24px}}
+@keyframes grow{from{transform:scaleX(0)}}
+
+.route-head{display:grid;grid-template-columns:minmax(0,1fr) var(--chw) minmax(0,1fr);column-gap:var(--rg);margin-top:44px;font:500 10.5px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.route-head span:first-child{text-align:right}
+.route{position:relative;margin-top:14px}
+.stops{list-style:none;margin:0;padding:0}
+.route-block{--chw:72px;--rg:clamp(14px,3vw,40px)}
+.stop{display:grid;grid-template-columns:minmax(0,1fr) var(--chw) minmax(0,1fr);column-gap:var(--rg);padding-block:22px;min-height:40px}
+.stop .eu{text-align:right}
+.stop b{display:block;font:700 clamp(24px,2.8vw,36px)/1 var(--display);text-transform:uppercase;letter-spacing:.02em;color:var(--dim);transition:color .5s}
+.stop span{display:block;margin-top:8px;font-size:15px;line-height:1.45;color:var(--muted);max-width:40ch}
+.stop .eu span{margin-left:auto}
+.stop.on b{color:var(--paper)}
+.channel{position:absolute;top:0;bottom:0;left:50%;width:var(--chw);transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(127,214,203,.07) 30%,rgba(232,176,75,.06) 70%,transparent)}
+.channel::before,.channel::after{content:"";position:absolute;top:0;bottom:0}
+.channel::before{left:32%;width:3px;background:linear-gradient(var(--aqua) 0 12px,transparent 12px 26px);background-size:100% 26px;animation:down .9s linear infinite}
+.channel::after{right:32%;width:2px;background:linear-gradient(var(--amber) 0 6px,transparent 6px 18px);background-size:100% 18px;animation:up 1.8s linear infinite;opacity:.85}
+@keyframes down{to{background-position-y:26px}}
+@keyframes up{to{background-position-y:-18px}}
+.ferry{position:absolute;top:0;left:50%;width:22px;height:48px;z-index:2;transform:translate(-50%,0);filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+
+footer{border-top:1px solid var(--line);padding-block:28px 56px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 40px;font:400 12px/1.6 var(--mono);color:var(--dim)}
+footer p{margin:0;max-width:72ch}
+
+@media (max-width:980px){.panel{grid-template-columns:1fr}.readout{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:760px){.hero-meta{grid-template-columns:1fr}.marsili{grid-template-columns:1fr}.measures{grid-template-columns:1fr}}
+@media (max-width:560px){
+  .readout{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .canvas-box{height:400px}
+  .route-block{--chw:40px;--rg:12px}
+  .stop b{font-size:20px}.stop span{font-size:13px}
+  .cut-label{display:none}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<header class="topbar wrap">
+  <span>Boğaziçi · 41°05′K 29°03′D</span>
+  <span>Boyuna kesit · dikey ölçek abartılı</span>
+</header>
+
+<section class="hero wrap" lang="tr">
+  <div class="title-wrap">
+    <h1 class="title" aria-label="İki Akıntı"><span class="t-top" aria-hidden="true">İki Akıntı</span><span class="t-bot" aria-hidden="true">İki Akıntı</span></h1>
+    <span class="cut-label" aria-hidden="true">haloklin · iki suyun sınırı</span>
+  </div>
+  <div class="hero-meta">
+    <p class="lede">Boğaz’da su aynı anda iki yöne akar. Üstte Karadeniz’in az tuzlu suyu güneye, Marmara’ya iner. Onun altında Akdeniz’den gelen daha ağır ve tuzlu su ters yöne, kuzeye doğru ilerler. Aşağıdaki kesitte imleci suyun içinde gezdirin; her noktanın derinliğini, tuzluluğunu ve akıntı yönünü okuyabilirsiniz.</p>
+    <ul class="legend">
+      <li><i class="sw aqua"></i><b>Karadeniz suyu</b><span>az tuzlu, ≈18 ‰ · güneye akar</span></li>
+      <li><i class="sw amber"></i><b>Akdeniz suyu</b><span>tuzlu, ≈38 ‰ · kuzeye akar</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="stage wrap" aria-label="Canlı kesit">
+  <div class="canvas-box">
+    <canvas id="sim" tabindex="0" role="img" aria-label="Boğaziçi'nin boyuna kesiti. Soldan sağa Karadeniz'den Marmara'ya; üst katman sağa, güneye; alt katman sola, kuzeye akıyor. Ok tuşlarıyla sondayı hareket ettirebilirsiniz."></canvas>
+  </div>
+  <div class="panel">
+    <div>
+      <p class="panel-h">Sonda <b>· imleci kesitte gezdirin ya da dokunun</b></p>
+      <dl class="readout">
+        <div><dt>Konum</dt><dd><span class="v" id="r-km">19,8 km</span><span class="s">Karadeniz girişinden</span></dd></div>
+        <div><dt>Derinlik</dt><dd><span class="v" id="r-dep">48 m</span><span class="s" id="r-dep-s">taban 104 m</span></dd></div>
+        <div><dt>Tuzluluk</dt><dd><span class="v" id="r-sal">36,9 ‰</span><span class="s" id="r-sal-s">tuzlu</span></dd></div>
+        <div><dt>Akıntı</dt><dd><span class="v" id="r-flo">← 1,1 kn</span><span class="s" id="r-flo-s">kuzeye · 0,6 m/s</span></dd></div>
+        <div><dt>Katman</dt><dd><span class="v" id="r-lay"><i class="chip" id="r-chip" style="background:var(--amber)"></i>Alt</span><span class="s" id="r-lay-s">Akdeniz suyu</span></dd></div>
+      </dl>
+    </div>
+    <div class="controls">
+      <div class="wind-head"><label for="wind">Rüzgâr</label><output id="wind-out" for="wind">Poyraz</output></div>
+      <input type="range" id="wind" min="-100" max="100" step="1" value="-30">
+      <div class="wind-ends"><span>← Poyraz (KD)</span><span>Lodos (GB) →</span></div>
+      <p class="note">Poyraz yüzey akıntısını hızlandırır. Güçlü lodos onu yavaşlatır, alt akıntıyı güçlendirir.<br><span id="wind-note">Akıntıburnu yüzeyi <b>4,9 kn</b> · alt akıntı <b>0,9 kn</b></span></p>
+      <div class="btns">
+        <button class="btn" id="b-play" type="button">Durdur</button>
+        <button class="btn" id="b-sound" type="button" aria-pressed="false">Denizi dinle</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter wrap" aria-labelledby="h-marsili">
+  <div class="marsili">
+    <div class="prose">
+      <p class="kicker">1680 · İstanbul</p>
+      <h2 id="h-marsili">Bir ip, birkaç mantar</h2>
+      <p>Boğaz balıkçıları bunu çoktan biliyordu. Ağırlıklı ağlarını derine saldıklarında ağ, yüzeydeki akıntının tersine, kuzeye doğru çekiliyordu.</p>
+      <p>1679–80 yıllarında İstanbul’da bulunan genç Bolonyalı Luigi Ferdinando Marsili bunu ölçmeye karar verdi. Aralıklarla mantar bağlanmış ağırlıklı bir ipi kayıktan suya sarkıttı. Üstteki mantarlar güneye savruldu; belli bir derinliğin altındakiler kuzeye.</p>
+      <p>Sonra aynı akışı bir tankta, bir bölmeyle ayırdığı iki farklı yoğunlukta suyla yeniden üretti. 1681’de yayımladığı <em>Osservazioni intorno al Bosforo Tracio</em>, bir deniz akıntısını deneyle açıklayan ilk çalışmalardan biri sayılır.</p>
+    </div>
+    <figure>
+      <svg id="m-svg" viewBox="0 0 360 460" role="img" aria-label="Marsili'nin deneyi: kayıktan sarkıtılan ipin üst kısmı güneye, alt kısmı kuzeye savruluyor.">
+        <path id="m-up" fill="rgba(127,214,203,.08)"/>
+        <path id="m-lo" fill="rgba(232,176,75,.075)"/>
+        <line class="fl-r" x1="0" x2="360" y1="112" y2="112"/>
+        <line class="fl-r" x1="0" x2="360" y1="158" y2="158"/>
+        <line class="fl-l" x1="0" x2="360" y1="262" y2="262"/>
+        <line class="fl-l" x1="0" x2="360" y1="318" y2="318"/>
+        <line class="fl-l" x1="0" x2="360" y1="372" y2="372"/>
+        <path id="m-if" fill="none" stroke="rgba(233,228,208,.45)" stroke-width="1" stroke-dasharray="3 5"/>
+        <path d="M0,418 C50,404 110,432 180,420 S300,404 360,424 L360,460 L0,460 Z" fill="#1A2E3F"/>
+        <path d="M0,418 C50,404 110,432 180,420 S300,404 360,424" fill="none" stroke="rgba(228,235,238,.28)"/>
+        <line x1="0" x2="360" y1="70" y2="70" stroke="rgba(127,214,203,.6)"/>
+        <text class="svg-lab" x="0" y="26">K · KARADENİZ</text>
+        <text class="svg-lab" x="360" y="26" text-anchor="end">MARMARA · G</text>
+        <text class="svg-lab a" x="6" y="92">yüzey akıntısı →</text>
+        <text class="svg-lab b" x="354" y="400" text-anchor="end">← alt akıntı</text>
+        <path id="m-rope" fill="none" stroke="#E4EBEE" stroke-width="1.4"/>
+        <g id="m-corks"></g>
+        <rect id="m-weight" width="10" height="14" rx="1" fill="#0A1826" stroke="#E8B04B" stroke-width="1.5"/>
+        <g id="m-boat"><path d="M150,62 L210,62 L201,74 L159,74 Z" fill="#E4EBEE"/><line x1="176" y1="62" x2="176" y2="40" stroke="#E4EBEE" stroke-width="1.4"/></g>
+      </svg>
+      <figcaption>Canlandırma. İpin şekli, iki katmanın ters yönlü sürüklemesini gösterecek biçimde sadeleştirildi.</figcaption>
+      <button class="btn" id="b-rope" type="button">İpi yeniden indir</button>
+    </figure>
+  </div>
+</section>
+
+<section class="chapter wrap" aria-labelledby="h-budget">
+  <p class="kicker">Ölçüler ve su bütçesi</p>
+  <h2 id="h-budget">Karadeniz taşar, Akdeniz sızar</h2>
+  <ul class="measures">
+    <li><span class="num"><span data-count="31">31</span><small>km</small></span><p>Karadeniz girişinden Marmara’daki Sarayburnu’na kadar uzunluk.</p></li>
+    <li><span class="num"><span data-count="698">698</span><small>m</small></span><p>En dar yer, Rumelihisarı ile Anadoluhisarı arası.</p></li>
+    <li><span class="num">≈<span data-count="110">110</span><small>m</small></span><p>En derin kesim, Bebek ve Kandilli önleri.</p></li>
+  </ul>
+  <div class="budget" id="budget">
+    <div class="flow">
+      <div class="flow-label"><span><b>≈600 km³</b> / yıl</span><span>Üst katman · güneye, Marmara’ya →</span></div>
+      <div class="bar south"></div>
+    </div>
+    <div class="flow">
+      <div class="flow-label"><span><b>≈300 km³</b> / yıl</span><span>← Alt katman · kuzeye, Karadeniz’e</span></div>
+      <div class="bar north"></div>
+    </div>
+  </div>
+  <div class="prose"><p>Karadeniz’e nehirlerden ve yağıştan giren su, buharlaşmayla kaybettiğinden fazladır. Bu fazla, üstten Marmara’ya taşar. Alttan giren tuzlu su bunun yaklaşık yarısı kadardır. Aradaki fark büyük ölçüde Tuna, Dinyeper ve Don gibi nehirlerin her yıl getirdiği tatlı sudur.</p></div>
+</section>
+
+<section class="chapter wrap route-block" aria-labelledby="h-route">
+  <p class="kicker">Kuzeyden güneye</p>
+  <h2 id="h-route">Vapurla bir iniş</h2>
+  <div class="prose"><p>Sayfayı kaydırdıkça vapur Karadeniz girişinden Marmara’ya iner. Ortadaki kanalda kalın çizgi yüzey akıntısını, ince çizgi alttan kuzeye tırmanan tuzlu suyu gösterir.</p></div>
+  <div class="route-head" aria-hidden="true"><span>Avrupa yakası</span><span></span><span>Asya yakası</span></div>
+  <div class="route" id="route">
+  <ol class="stops">
+    <li class="stop on"><div class="eu"><b>Rumeli Feneri</b><span>Karadeniz girişi. Alt akıntı buradan sonra şelfe çıkar ve Karadeniz’in dibine doğru yayılır.</span></div><div></div><div class="as"><b>Anadolu Feneri</b></div></li>
+    <li class="stop"><div class="eu"><b>Yeniköy</b><span>Boğaz’ın en keskin dönüşlerinden biri. Büyük gemiler burada rotayı sertçe kırar.</span></div><div></div><div class="as"><b>Beykoz</b></div></li>
+    <li class="stop"><div class="eu"><b>Rumelihisarı</b><span>En dar yer, yaklaşık 698 m. Kesit daralınca akıntı hızlanır.</span></div><div></div><div class="as"><b>Anadoluhisarı</b></div></li>
+    <li class="stop"><div class="eu"><b>Bebek</b></div><div></div><div class="as"><b>Kandilli</b><span>Boğaz’ın en derin kesimi, yaklaşık 110 m. Tuzlu alt katman burada en kalın hâlindedir.</span></div></li>
+    <li class="stop"><div class="eu"><b>Arnavutköy</b><span>Akıntıburnu. Yüzey akıntısının en sert olduğu yer. Eskiden burada kayıkları akıntıya karşı kıyıdan halatla çeken yedekçiler çalışırdı.</span></div><div></div><div class="as"></div></li>
+    <li class="stop"><div class="eu"><b>Ortaköy</b><span>İki kıyıyı 1973’ten beri Boğaz’ın ilk köprüsü bağlar.</span></div><div></div><div class="as"><b>Beylerbeyi</b></div></li>
+    <li class="stop"><div class="eu"><b>Beşiktaş</b></div><div></div><div class="as"><b>Üsküdar</b><span>Karşıya geçen vapurlar burnunu hafifçe kuzeye çevirir ve akıntıya pay bırakarak ilerler.</span></div></li>
+    <li class="stop"><div class="eu"><b>Sarayburnu</b><span>Marmara’ya çıkış. Tuzlu alt akıntı Boğaz’a buradan, güney eşiğinin üzerinden girer.</span></div><div></div><div class="as"></div></li>
+  </ol>
+    <div class="channel" aria-hidden="true"></div>
+    <svg class="ferry" id="ferry" viewBox="0 0 22 48" aria-hidden="true"><path d="M11,47 C4,40 2,32 2,22 L2,6 C2,3 4,1 7,1 L15,1 C18,1 20,3 20,6 L20,22 C20,32 18,40 11,47 Z" fill="#E4EBEE"/><rect x="5" y="9" width="12" height="20" rx="2" fill="#0A1826" opacity=".85"/><circle cx="11" cy="19" r="3.2" fill="#E8B04B"/></svg>
+  </div>
+</section>
+
+<footer class="wrap">
+  <p>İki Akıntı · Boğaziçi’nin iki katmanlı akıntısı üzerine etkileşimli bir kesit.</p>
+  <p>Kesit dikey yönde abartılmıştır. Hız ve tuzluluk değerleri yayımlanmış ortalamalara dayanan yaklaşık bir modelden gelir; seyir için kullanılamaz.</p>
+</footer>
+
+<script>
+(()=>{
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=id=>document.getElementById(id);
+const fmt1=v=>v.toLocaleString('tr-TR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const fmt0=v=>Math.round(v).toLocaleString('tr-TR');
+const g=(x,m,s)=>{const z=(x-m)/s;return Math.exp(-.5*z*z)};
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+
+/* ---------- physical model (approximate) ---------- */
+const S={wind:-.3,running:!reduce,T:0,sound:false};
+const MAXD=120,KX=1/55,NARROW=.47,CAPE=.655,DEEP=.58;
+const bed=xn=>62+48*g(xn,DEEP,.14)-30*g(xn,.93,.07)+3.5*Math.sin(xn*23+1)+1.6*Math.sin(xn*57);
+const iface=xn=>Math.min(52-36*xn+2.4*Math.sin(xn*14-S.T*.6)-S.wind*4,bed(xn)-8);
+const fu=()=>1-.7*S.wind, fl=()=>Math.max(.25,1+.55*S.wind);
+function flowAt(xn,m){
+  const h=iface(xn),d=bed(xn);
+  const nU=1+.7*g(xn,NARROW,.05)+1.1*g(xn,CAPE,.03);
+  const zu=Math.min(m/h,1);
+  const up=2.1*nU*fu()*(1-.8*zu*zu);
+  const zl=clamp((m-h)/(d-h),0,1);
+  const lo=-1.1*(1+.35*g(xn,NARROW,.05))*fl()*Math.sqrt(Math.sin(Math.PI*zl));
+  const b=.5*(1+Math.tanh((m-h)/2.5));
+  return up*(1-b)+lo*b;
+}
+function salAt(xn,m){
+  const h=iface(xn);
+  const su=17.5+4.5*xn+3*Math.max(0,m/h-.7), sl=35.5+3*xn;
+  const b=.5*(1+Math.tanh((m-h)/2.5));
+  return su*(1-b)+sl*b;
+}
+
+/* ---------- canvas ---------- */
+const cv=$('sim'),ctx=cv.getContext('2d');
+let W=0,H=0,PX0=0,PX1=0,PW=1,SY=0,PH=1,narrow=false,waterGrad,bedPat,dirty=true;
+const MAXN=2800;
+const P={x:new Float32Array(MAXN),r:new Float32Array(MAXN),l:new Uint8Array(MAXN),s:new Float32Array(MAXN),u:new Float32Array(MAXN),m:new Float32Array(MAXN),life:new Float32Array(MAXN)};
+const BK=new Uint8Array(MAXN);
+let N=0;
+function spawn(i,where){
+  let xn,l;
+  if(where===1){xn=0;l=0}else if(where===2){xn=1;l=1}else{xn=Math.random();l=Math.random()<.5?0:1}
+  P.x[i]=xn;P.l[i]=l;P.r[i]=.03+Math.random()*.94;P.s[i]=l;P.life[i]=6+Math.random()*14;
+}
+const xOf=xn=>PX0+xn*PW, yOf=m=>SY+m/MAXD*PH, mOf=y=>(y-SY)/PH*MAXD;
+const depthOf=i=>{const xn=P.x[i],h=iface(xn);return P.l[i]?h+P.r[i]*(bed(xn)-h):P.r[i]*h};
+
+const B=12;
+const COLS=(()=>{const a=[127,214,203],f=[233,228,208],b=[232,176,75],o=[];
+  for(let i=0;i<B;i++){const t=i/(B-1);const [p,q,k]=t<.5?[a,f,t/.5]:[f,b,(t-.5)/.5];o.push(`rgb(${p.map((v,j)=>Math.round(v+(q[j]-v)*k)).join(',')})`)}return o})();
+
+const pr={x:null,y:null};
+const probe={x:0,y:0,on:false,t:-1e9};
+const WS=Array.from({length:34},()=>({x:Math.random(),y:Math.random(),l:.02+Math.random()*.05,v:.6+Math.random()*.8}));
+
+function resize(){
+  const r=cv.getBoundingClientRect();if(!r.width)return;
+  W=r.width;H=r.height;const dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+  narrow=W<600;
+  PX0=narrow?34:52;PX1=W-(narrow?6:14);PW=PX1-PX0;SY=narrow?40:50;PH=H-SY-10;
+  const want=Math.round(clamp(W*H/240,700,MAXN));
+  for(let i=N;i<want;i++)spawn(i,0);
+  N=want;
+  waterGrad=ctx.createLinearGradient(0,SY,0,SY+PH);
+  waterGrad.addColorStop(0,'#123049');waterGrad.addColorStop(.45,'#0D2236');waterGrad.addColorStop(1,'#0A1826');
+  const pc=document.createElement('canvas');pc.width=pc.height=7;const p=pc.getContext('2d');
+  p.fillStyle='#1A2E3F';p.fillRect(0,0,7,7);p.fillStyle='rgba(228,235,238,.14)';p.fillRect(1,1,1,1);p.fillRect(4,5,1,1);
+  bedPat=ctx.createPattern(pc,'repeat');
+  if(pr.x===null){pr.x=xOf(.62);pr.y=yOf(48)}
+  dirty=true;
+}
+new ResizeObserver(resize).observe(cv);
+
+function step(dt){
+  S.T+=dt;
+  const swirl=probe.on&&performance.now()-probe.t<1500;
+  const R=narrow?60:90,R2=R*R;
+  for(let i=0;i<N;i++){
+    let xn=P.x[i];const l=P.l[i];
+    const h=iface(xn),d=bed(xn),th=l?d-h:h;
+    const m=l?h+P.r[i]*th:P.r[i]*th;
+    let u=flowAt(xn,m);
+    if(l===0&&u<.12)u=.12;else if(l===1&&u>-.1)u=-.1;
+    let dx=u*KX*dt,dr=(Math.random()-.5)*dt*.3;
+    if(swirl){
+      const px=xOf(xn)-pr.x,py=yOf(m)-pr.y,q=px*px+py*py;
+      if(q<R2&&q>1){const dd=Math.sqrt(q),f=1-dd/R,k=f*f*150;dx+=-py/dd*k*dt/PW;dr+=px/dd*k*dt/(th/MAXD*PH+1)}
+    }
+    xn+=dx;let r=P.r[i]+dr;r=r<.02?.02:r>.98?.98:r;
+    P.x[i]=xn;P.r[i]=r;P.u[i]=u;P.m[i]=m;
+    if(l===0&&r>.93&&Math.random()<dt*.06){P.l[i]=1;P.r[i]=.05}
+    else if(l===1&&r<.07&&Math.random()<dt*.2){P.l[i]=0;P.r[i]=.95}
+    P.s[i]+=(P.l[i]-P.s[i])*Math.min(1,dt*.22);
+    P.life[i]-=dt;
+    if(xn>1)spawn(i,1);else if(xn<0)spawn(i,2);else if(P.life[i]<0)spawn(i,0);
+  }
+  for(const w of WS){w.x+=(-S.wind*.09*w.v+.004)*dt;if(w.x>1.05)w.x-=1.1;if(w.x<-.05)w.x+=1.1}
+}
+
+function updateProbe(dt){
+  const now=performance.now();let tx,ty,k;
+  if(now-probe.t<2600){tx=clamp(probe.x,PX0,PX1);ty=probe.y;k=12}
+  else{const xn=.5+.4*Math.sin(S.T*.11),f=.5+.47*Math.sin(S.T*.29+.6);tx=xOf(xn);ty=yOf(f*bed(xn));k=2.2}
+  const a=Math.min(1,dt*k);pr.x+=(tx-pr.x)*a;pr.y+=(ty-pr.y)*a;
+}
+
+let lastRead={xn:.62,m:48,dB:104};
+const MONO='"IBM Plex Mono", ui-monospace, Consolas, monospace';
+function label(txt,x,y,align,color){ctx.textAlign=align;ctx.fillStyle=color;ctx.fillText(txt,x,y)}
+
+function draw(){
+  const T=S.T;
+  ctx.clearRect(0,0,W,H);
+  const steps=Math.max(48,Math.round(PW/5)),sx=[],bY=[],iY=[],sY=[];
+  for(let k=0;k<=steps;k++){const xn=k/steps;sx.push(xOf(xn));bY.push(yOf(bed(xn)));iY.push(yOf(iface(xn)));sY.push(SY+1.3*Math.sin(xn*46-T*1.7)+.8*Math.sin(xn*97+T*1.1))}
+  const along=(arr,rev)=>{if(rev){for(let k=steps;k>=0;k--)ctx.lineTo(sx[k],arr[k])}else{for(let k=0;k<=steps;k++)ctx.lineTo(sx[k],arr[k])}};
+
+  // wind above the surface
+  ctx.lineCap='round';ctx.lineWidth=1;
+  ctx.strokeStyle=`rgba(228,235,238,${(.08+.32*Math.abs(S.wind)).toFixed(3)})`;ctx.beginPath();
+  for(const w of WS){const x=PX0+w.x*PW,y=22+w.y*(SY-30),len=w.l*PW*(.3+Math.abs(S.wind));ctx.moveTo(x,y);ctx.lineTo(x+(S.wind<=0?-len:len),y)}
+  ctx.stroke();
+
+  // water and layer tints
+  ctx.beginPath();along(sY);along(bY,true);ctx.closePath();ctx.fillStyle=waterGrad;ctx.fill();
+  ctx.beginPath();along(sY);along(iY,true);ctx.closePath();ctx.fillStyle='rgba(127,214,203,.055)';ctx.fill();
+  ctx.beginPath();along(iY);along(bY,true);ctx.closePath();ctx.fillStyle='rgba(232,176,75,.05)';ctx.fill();
+  ctx.strokeStyle='rgba(228,235,238,.05)';ctx.beginPath();
+  for(const m of [25,50,75,100]){const y=Math.round(yOf(m))+.5;ctx.moveTo(PX0,y);ctx.lineTo(PX1,y)}ctx.stroke();
+
+  // particles, batched by colour
+  const still=!S.running;
+  for(let i=0;i<N;i++){
+    if(still||!P.m[i]){P.m[i]=depthOf(i);P.u[i]=flowAt(P.x[i],P.m[i])}
+    const b=(P.s[i]*B)|0;BK[i]=b<0?0:b>=B?B-1:b;
+  }
+  ctx.lineWidth=narrow?1.2:1.4;ctx.globalAlpha=.9;
+  const kL=KX*PW*.22;
+  for(let b=0;b<B;b++){
+    ctx.strokeStyle=COLS[b];ctx.beginPath();
+    for(let i=0;i<N;i++){
+      if(BK[i]!==b)continue;
+      const x=xOf(P.x[i]),y=yOf(P.m[i]);let L=P.u[i]*kL;
+      if(L>=0&&L<1.3)L=1.3;else if(L<0&&L>-1.3)L=-1.3;
+      ctx.moveTo(x-L,y);ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+
+  // interface, seabed, surface
+  ctx.lineWidth=1;ctx.setLineDash([3,5]);ctx.strokeStyle='rgba(233,228,208,.4)';ctx.beginPath();along(iY);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();along(bY);ctx.lineTo(PX1,H);ctx.lineTo(PX0,H);ctx.closePath();ctx.fillStyle=bedPat;ctx.fill();
+  ctx.strokeStyle='rgba(228,235,238,.3)';ctx.beginPath();along(bY);ctx.stroke();
+  ctx.strokeStyle='rgba(127,214,203,.6)';ctx.beginPath();along(sY);ctx.stroke();
+
+  // labels
+  ctx.font=`500 10px ${MONO}`;ctx.textBaseline='middle';
+  if('letterSpacing' in ctx)ctx.letterSpacing='0px';
+  for(const m of [0,25,50,75,100])label(m===0?'0 m':String(m),PX0-8,yOf(m),'right','rgba(138,158,173,.9)');
+  if('letterSpacing' in ctx)ctx.letterSpacing='1.5px';
+  ctx.textBaseline='alphabetic';
+  label('← KARADENİZ',PX0,14,'left','rgba(228,235,238,.8)');
+  label('MARMARA →',PX1,14,'right','rgba(228,235,238,.8)');
+  const places=[[.3,'YENİKÖY'],[NARROW,'RUMELİHİSARI'],[CAPE,'AKINTIBURNU'],[.95,'SARAYBURNU']];
+  for(const [xn,name] of places){
+    if(narrow&&xn!==CAPE)continue;
+    const x=xOf(xn),yb=yOf(bed(xn));
+    ctx.strokeStyle='rgba(228,235,238,.16)';ctx.beginPath();ctx.moveTo(Math.round(x)+.5,yb+4);ctx.lineTo(Math.round(x)+.5,H-22);ctx.stroke();
+    const tw=ctx.measureText(name).width;
+    label(name,clamp(x,PX0+tw/2,PX1-tw/2),H-9,'center','rgba(160,178,191,.95)');
+  }
+  if('letterSpacing' in ctx)ctx.letterSpacing='0px';
+  if(!narrow){
+    label('≈110 m',xOf(DEEP)+8,yOf(bed(DEEP))+16,'left','rgba(138,158,173,.9)');
+    label('haloklin',xOf(.8)+4,yOf(iface(.8))-8,'left','rgba(233,228,208,.6)');
+  }
+  // Akıntıburnu pulse
+  const cx=xOf(CAPE),ph=(T*.7)%1;
+  ctx.strokeStyle=`rgba(233,228,208,${(.75*(1-ph)).toFixed(3)})`;ctx.beginPath();ctx.arc(cx,SY,3+ph*16,0,7);ctx.stroke();
+  ctx.fillStyle='#E9E4D0';ctx.beginPath();ctx.arc(cx,SY,2.5,0,7);ctx.fill();
+
+  // probe
+  const xn=clamp((pr.x-PX0)/PW,0,1),dB=bed(xn),m=clamp(mOf(pr.y),0,dB),px=xOf(xn),py=yOf(m);
+  ctx.setLineDash([2,4]);ctx.strokeStyle='rgba(228,235,238,.5)';ctx.beginPath();ctx.moveTo(Math.round(px)+.5,SY);ctx.lineTo(Math.round(px)+.5,yOf(dB));ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='#E4EBEE';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px,py,7,0,7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(px-15,py);ctx.lineTo(px-10,py);ctx.moveTo(px+10,py);ctx.lineTo(px+15,py);ctx.stroke();
+  const u=flowAt(xn,m),txt=`${fmt0(m)} m  ${u>=0?'→':'←'} ${fmt1(Math.abs(u))} kn`;
+  ctx.font=`500 11px ${MONO}`;
+  const tw=ctx.measureText(txt).width+16;let tx=px+20;if(tx+tw>W-4)tx=px-20-tw;
+  const ty=clamp(py-11,SY+2,H-26);
+  ctx.fillStyle='rgba(10,24,38,.9)';ctx.fillRect(tx,ty,tw,22);
+  ctx.lineWidth=1;ctx.strokeStyle=u>=0?'rgba(127,214,203,.85)':'rgba(232,176,75,.85)';ctx.strokeRect(tx+.5,ty+.5,tw-1,21);
+  ctx.textBaseline='middle';label(txt,tx+8,ty+11.5,'left','#E4EBEE');
+  lastRead={xn,m,dB};
+}
+
+/* ---------- readout ---------- */
+const R={km:$('r-km'),dep:$('r-dep'),depS:$('r-dep-s'),sal:$('r-sal'),salS:$('r-sal-s'),flo:$('r-flo'),floS:$('r-flo-s'),lay:$('r-lay'),layS:$('r-lay-s')};
+function updateReadout(){
+  const {xn,m,dB}=lastRead,h=iface(xn),u=flowAt(xn,m),s=salAt(xn,m);
+  R.km.textContent=fmt1(xn*31)+' km';
+  R.dep.textContent=fmt0(m)+' m';R.depS.textContent='taban '+fmt0(dB)+' m';
+  R.sal.textContent=fmt1(s)+' ‰';R.salS.textContent=s<25?'az tuzlu':s<33?'karışım':'tuzlu';
+  R.flo.textContent=(u>=0?'→ ':'← ')+fmt1(Math.abs(u))+' kn';
+  R.floS.textContent=(u>=0?'güneye':'kuzeye')+' · '+fmt1(Math.abs(u)*.514)+' m/s';
+  const dz=m-h;let name,sub,col;
+  if(Math.abs(dz)<3.5){name='Sınır';sub='iki su karışıyor';col='var(--foam)'}
+  else if(dz<0){name='Üst';sub='Karadeniz suyu';col='var(--aqua)'}
+  else{name='Alt';sub='Akdeniz suyu';col='var(--amber)'}
+  R.lay.innerHTML=`<i class="chip" style="background:${col}"></i>${name}`;R.layS.textContent=sub;
+}
+
+/* ---------- controls ---------- */
+const wind=$('wind'),wout=$('wind-out'),wnote=$('wind-note');
+const windText=w=>w<-.66?'Sert poyraz':w<-.2?'Poyraz':w<.2?'Durgun':w<.66?'Lodos':'Sert lodos';
+function updateWind(){
+  S.wind=+wind.value/100;wout.textContent=windText(S.wind);
+  const h=iface(NARROW),d=bed(NARROW);
+  wnote.innerHTML=`Akıntıburnu yüzeyi <b>${fmt1(flowAt(CAPE,0))} kn</b> · alt akıntı <b>${fmt1(Math.abs(flowAt(NARROW,(h+d)/2)))} kn</b>`;
+  dirty=true;
+}
+wind.addEventListener('input',updateWind);
+
+function setPointer(e){const r=cv.getBoundingClientRect();probe.x=e.clientX-r.left;probe.y=e.clientY-r.top;probe.on=true;probe.t=performance.now();dirty=true}
+cv.addEventListener('pointermove',setPointer);
+cv.addEventListener('pointerdown',setPointer);
+cv.addEventListener('pointerleave',()=>{probe.on=false});
+cv.addEventListener('keydown',e=>{
+  const d={ArrowLeft:[-14,0],ArrowRight:[14,0],ArrowUp:[0,-10],ArrowDown:[0,10]}[e.key];if(!d)return;
+  e.preventDefault();
+  if(performance.now()-probe.t>2600){probe.x=pr.x;probe.y=pr.y}
+  probe.x=clamp(probe.x+d[0],PX0,PX1);probe.y=clamp(probe.y+d[1],SY,H);probe.on=false;probe.t=performance.now();dirty=true;
+});
+
+const bPlay=$('b-play');
+if(reduce)bPlay.textContent='Oynat';
+bPlay.addEventListener('click',()=>{S.running=!S.running;bPlay.textContent=S.running?'Durdur':'Oynat';dirty=true});
+
+/* ---------- sound: brown noise shaped by the current ---------- */
+let ac=null,gainN=null,filt=null;
+const bSound=$('b-sound');
+bSound.addEventListener('click',()=>{
+  try{
+    if(!ac){
+      const AC=window.AudioContext||window.webkitAudioContext;ac=new AC();
+      const len=ac.sampleRate*6,buf=ac.createBuffer(2,len,ac.sampleRate);
+      for(let c=0;c<2;c++){const d=buf.getChannelData(c);let last=0;for(let i=0;i<len;i++){last=(last+.02*(Math.random()*2-1))/1.02;d[i]=last*3.2}}
+      const src=ac.createBufferSource();src.buffer=buf;src.loop=true;
+      filt=ac.createBiquadFilter();filt.type='lowpass';filt.frequency.value=420;filt.Q.value=.7;
+      gainN=ac.createGain();gainN.gain.value=0;
+      src.connect(filt).connect(gainN).connect(ac.destination);src.start();
+    }
+    S.sound=!S.sound;
+    if(S.sound)ac.resume();
+    gainN.gain.setTargetAtTime(S.sound?.2:0,ac.currentTime,.4);
+    bSound.setAttribute('aria-pressed',String(S.sound));
+    bSound.textContent=S.sound?'Sesi kapat':'Denizi dinle';
+  }catch(err){bSound.disabled=true;bSound.textContent='Ses kullanılamıyor'}
+});
+function updateSound(){
+  if(!S.sound||!ac)return;
+  const cape=flowAt(CAPE,0);
+  filt.frequency.setTargetAtTime(240+cape*90+80*Math.sin(S.T*.35),ac.currentTime,.6);
+  gainN.gain.setTargetAtTime(.14+.07*Math.sin(S.T*.23)+.03*Math.abs(S.wind),ac.currentTime,.8);
+}
+
+/* ---------- title: the two halves drift with their layers ---------- */
+const tTop=document.querySelector('.t-top'),tBot=document.querySelector('.t-bot');
+let intro=0,tt=0;
+function updateTitle(dt){
+  if(reduce)return;
+  tt+=dt;if(intro<1)intro=Math.min(1,intro+dt/1.9);
+  const e=1-Math.pow(1-intro,4),vw=innerWidth;
+  const a=fu()*.011*vw*(.75+.25*Math.sin(tt*.8));
+  const b=fl()*.009*vw*(.75+.25*Math.sin(tt*.6+1.3));
+  tTop.style.transform=`translate3d(${((1-e)*-.55*vw+e*a).toFixed(1)}px,0,0)`;
+  tBot.style.transform=`translate3d(${((1-e)*.55*vw-e*b).toFixed(1)}px,0,0)`;
+}
+
+/* ---------- Marsili's line ---------- */
+const mUp=$('m-up'),mLo=$('m-lo'),mIf=$('m-if'),rope=$('m-rope'),corkG=$('m-corks'),weight=$('m-weight'),boat=$('m-boat');
+const SURF=70,IFC=200,BOT=410,X0=176,FULL=BOT-SURF-8;
+const corks=[];
+for(let j=0;j<12;j++){const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r','4.5');c.setAttribute('fill','#E4EBEE');c.setAttribute('stroke','#0A1826');c.setAttribute('stroke-width','1.2');corkG.appendChild(c);corks.push(c)}
+let ropeL=FULL,ropeStart=null,mVisible=false,mt=0;
+function mShape(yi,t){
+  const ifc=IFC-SURF;let off;
+  if(yi<ifc)off=48*Math.sin(yi/ifc*Math.PI/2);
+  else{const k=Math.min(1,(yi-ifc)/(BOT-SURF-ifc));off=48*(1-1.75*Math.sin(k*Math.PI/2))}
+  return off+(reduce?0:2.5*Math.sin(t*1.2+yi*.025));
+}
+function mDraw(t){
+  const pts=[];for(let x=0;x<=360;x+=12)pts.push(x+','+(IFC+4*Math.sin(x*.035-t*.9)).toFixed(1));
+  mIf.setAttribute('d','M'+pts.join(' L'));
+  mUp.setAttribute('d',`M0,${SURF} L360,${SURF} L`+pts.slice().reverse().join(' L')+' Z');
+  mLo.setAttribute('d','M'+pts.join(' L')+` L360,${BOT+20} L0,${BOT+20} Z`);
+  const n=Math.max(2,Math.ceil(ropeL/6));let d=`M${X0},${SURF+12}`;
+  for(let j=1;j<=n;j++){const yi=12+(ropeL-12)*j/n;d+=` L${(X0+mShape(yi,t)).toFixed(1)},${(SURF+yi).toFixed(1)}`}
+  rope.setAttribute('d',ropeL>12?d:'');
+  corks.forEach((c,j)=>{const yi=34+26*j;const show=yi<ropeL-10;c.setAttribute('opacity',show?'1':'0');if(show){c.setAttribute('cx',(X0+mShape(yi,t)).toFixed(1));c.setAttribute('cy',SURF+yi)}});
+  weight.setAttribute('x',(X0+mShape(Math.max(ropeL,12),t)-5).toFixed(1));weight.setAttribute('y',(SURF+Math.max(ropeL,12)).toFixed(1));
+  boat.setAttribute('transform',`rotate(${(reduce?0:1.6*Math.sin(t*.9)).toFixed(2)} ${X0} ${SURF})`);
+}
+function lowerRope(){if(reduce)return;ropeL=0;ropeStart=performance.now()}
+$('b-rope').addEventListener('click',lowerRope);
+let ropeSeen=false;
+new IntersectionObserver(es=>{for(const e of es){mVisible=e.isIntersecting;if(e.intersectionRatio>.35&&!ropeSeen){ropeSeen=true;lowerRope()}}},{threshold:[0,.35]}).observe($('m-svg'));
+mDraw(0);
+
+/* ---------- counters and budget bars ---------- */
+const countIO=new IntersectionObserver(es=>{for(const e of es){if(!e.isIntersecting)continue;countIO.unobserve(e.target);if(reduce)continue;
+  const el=e.target,to=+el.dataset.count,t0=performance.now();
+  const tick=now=>{const k=Math.min(1,(now-t0)/1400),v=to*(1-Math.pow(1-k,3));el.textContent=fmt0(v);if(k<1)requestAnimationFrame(tick)};requestAnimationFrame(tick)}},{threshold:.6});
+document.querySelectorAll('[data-count]').forEach(el=>countIO.observe(el));
+const budget=$('budget');
+const budgetIO=new IntersectionObserver(es=>{if(es[0].isIntersecting){budget.classList.add('play');budgetIO.disconnect()}},{threshold:.5});
+budgetIO.observe(budget);
+
+/* ---------- ferry follows scroll ---------- */
+const route=$('route'),ferry=$('ferry'),stops=[...route.querySelectorAll('.stop')];
+let scrollQueued=false;
+function placeFerry(){
+  scrollQueued=false;
+  const r=route.getBoundingClientRect(),vh=innerHeight;
+  const p=clamp((vh*.55-r.top)/r.height,0,1),y=p*(r.height-48);
+  ferry.style.transform=`translate(-50%,${y.toFixed(1)}px)`;
+  let best=0;stops.forEach((s,i)=>{if(s.offsetTop<=y+24)best=i});
+  stops.forEach((s,i)=>s.classList.toggle('on',i===best));
+}
+addEventListener('scroll',()=>{if(!scrollQueued){scrollQueued=true;requestAnimationFrame(placeFerry)}},{passive:true});
+addEventListener('resize',placeFerry);
+placeFerry();
+
+/* ---------- main loop ---------- */
+let visible=true,last=performance.now(),acc=0;
+new IntersectionObserver(es=>{visible=es[0].isIntersecting}).observe(cv);
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(visible&&W){
+    if(S.running)step(dt);
+    updateProbe(S.running?dt:1);
+    if(S.running||dirty){draw();dirty=false}
+    acc+=dt;if(acc>.1){acc=0;updateReadout();updateSound()}
+  }
+  updateTitle(dt);
+  if(mVisible){
+    mt+=dt;
+    if(ropeStart!==null){const k=Math.min(1,(now-ropeStart)/4200);ropeL=FULL*(1-Math.pow(1-k,3));if(k>=1)ropeStart=null}
+    if(!reduce||ropeStart!==null)mDraw(mt);
+  }
+  requestAnimationFrame(frame);
+}
+updateWind();
+if(document.fonts)document.fonts.ready.then(()=>{dirty=true});
+requestAnimationFrame(frame);
+})();
+</script>
